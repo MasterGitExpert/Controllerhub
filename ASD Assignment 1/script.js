@@ -1,6 +1,5 @@
 // Page Navigation
 function showPage(pageId) {
-    // Hide all pages
     const pages = document.querySelectorAll('.page');
     pages.forEach(page => page.classList.remove('active'));
     
@@ -49,7 +48,7 @@ function showNotification(message) {
 }
 
 function updateCartCount() {
-    // This function can be expanded to show cart count in the navbar
+
     console.log(`Cart contains ${cart.length} items`);
 }
 
