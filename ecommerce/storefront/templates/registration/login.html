@@ -1,17 +1,103 @@
 {% load static %}
-<!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Log in</title></head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Log in • Wavelength Gaming Gear</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Match index.html includes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+  <style>
+    /* Light tweaks so the form fits your theme */
+    .auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .auth-card { width: 100%; max-width: 480px; background: rgba(255,255,255,0.04);
+                 border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+                 padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    .auth-card h1 { margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
+    .auth-card p.sub { margin-top: 0; opacity: .8; }
+    .form-row { margin: 14px 0; display: flex; flex-direction: column; gap: 6px; }
+    .form-row label { font-weight: 600; }
+    .form-row input { padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18);
+                      background: rgba(255,255,255,0.06); color: inherit; }
+    .actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px;
+                   border: 1px solid rgba(0,212,255,0.5); background: linear-gradient(135deg, rgba(0,212,255,.15), rgba(0, 116, 217,.15));
+                   text-decoration: none; cursor: pointer; }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .link { text-decoration: none; opacity: .9; }
+    .errorlist, .form-errors { color: #ff6b6b; margin: 8px 0 0; list-style: none; padding: 0; }
+    .navbar { margin-bottom: 28px; } /* reuse your navbar spacing */
+  </style>
+</head>
 <body>
-  <h1>Log in</h1>
-  {% if form.errors %}
-    <p style="color:crimson">Incorrect username or password. Try again.</p>
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="hidden" name="next" value="{{ next|default:'/account/' }}">
-    <button type="submit">Log in</button>
-  </form>
+  <div class="particles" id="particles"></div>
+
+  <div class="container">
+    <!-- Navbar (matches index structure; minimal links for auth page) -->
+    <div class="navbar">
+      <a href="/" class="logo">
+        <i class="fas fa-wave-square"></i>
+        Wavelength
+      </a>
+      <nav>
+        <ul>
+          <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+          <li><a href="/"><i class="fas fa-gamepad"></i> Products</a></li>
+          <li><a href="/"><i class="fas fa-info-circle"></i> About</a></li>
+          <li><a href="/"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Centered auth card -->
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <h1><i class="fas fa-sign-in-alt"></i> Log in</h1>
+        <p class="sub">Welcome back! Enter your details to continue.</p>
+
+        {% if form.errors %}
+          <div class="form-errors">Your username and password didn’t match. Please try again.</div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <!-- Render fields manually so we can style them -->
+          <div class="form-row">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<ul class="errorlist"><li>{{ form.username.errors.0 }}</li></ul>{% endif %}
+          </div>
+
+          <div class="form-row">
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}<ul class="errorlist"><li>{{ form.password.errors.0 }}</li></ul>{% endif %}
+          </div>
+
+          <!-- Where to go after login -->
+          <input type="hidden" name="next" value="{{ next|default:'/' }}">
+
+          <div class="actions">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-unlock"></i> Log in
+            </button>
+            <a class="link" href="/"><i class="fas fa-arrow-left"></i> Back to Home</a>
+          </div>
+        </form>
+
+        <!-- Optional links (work if email backend / password views configured) -->
+        <div style="margin-top: 12px; opacity:.85;">
+          <small>
+            <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
