@@ -1,17 +1,17 @@
 // Page Navigation
-function showPage(pageId) {
+// function showPage(pageId) {
     
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.classList.remove('active'));
-    
-    
-    document.getElementById(pageId).classList.add('active');
+//     const pages = document.querySelectorAll('.page');
+//     pages.forEach(page => page.classList.remove('active'));
     
     
-    const navLinks = document.querySelectorAll('nav a');
-    navLinks.forEach(link => link.classList.remove('active'));
-    document.getElementById('nav-' + pageId).classList.add('active');
-}
+//     document.getElementById(pageId).classList.add('active');
+    
+    
+//     const navLinks = document.querySelectorAll('nav a');
+//     navLinks.forEach(link => link.classList.remove('active'));
+//     document.getElementById('nav-' + pageId).classList.add('active');
+// }
 
 // Shopping Cart Functionality
 let cart = [];
