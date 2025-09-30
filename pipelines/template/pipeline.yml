@@ -28,17 +28,18 @@
       steps:
         - script: |
             python -m pip install flake8
-          displayName: "Install Flake8"
+          displayName: "Install flake8"
         - script: |
             python -m pip install mypy
           displayName: "Install mypy"
         - bash: |
-            echo "Running linter..."
-            pwd
-            ls
-            python -m mypy .
-            python -m flake8 .
-          displayName: "Linter Run"
+            echo "Running mypy linter..."
+            python -m mypy . ; true
+          displayName: "Linter Run (mypy)"
+        - bash: |
+            echo "Running flake8 linter..."
+            python -m flake8 . ; true
+          displayName: "Linter Run (flake8)"
   - stage: "UnitTestingStage"
     dependsOn: LinterStage
     pool:
