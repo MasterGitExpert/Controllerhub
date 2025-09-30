@@ -24,7 +24,12 @@
                     <li><a href="#" onclick="showPage('products')" id="nav-products"><i class="fas fa-gamepad"></i> Products</a></li>
                     <li><a href="#" onclick="showPage('about')" id="nav-about"><i class="fas fa-info-circle"></i> About</a></li>
                     <li><a href="#" onclick="showPage('contact')" id="nav-contact"><i class="fas fa-envelope"></i> Contact</a></li>
+                    {% if request.user.is_authenticated %}
                     <li><a href="#" onclick="showPage('account')" id="nav-account"><i class="fas fa-user"></i> Account</a></li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}?next=/account/" id="nav-login"><i class="fas fa-sign-in-alt"></i> Log in</a></li>
+                    {% endif %}
+
                     <li><a href="#" onclick="showCart()" id="nav-cart"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
                 </ul>
             </nav>
