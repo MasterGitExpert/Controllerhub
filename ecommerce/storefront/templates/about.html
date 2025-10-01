@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wavelength Gaming Gear - About</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fas fa-wave-square"></i>
+                Wavelength
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'home' %}" class="active"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{% url 'products' %}"><i class="fas fa-gamepad"></i> Products</a></li>
+                    <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
+                    <li><a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Contact</a></li>
+                    <li><a href="{% url 'account' %}"><i class="fas fa-user"></i> Account</a></li>
+                    <li><a href="#" onclick="showCart()"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- About Page -->
+        <div class="page active">
+            <div class="page-header">
+                <h1><i class="fas fa-info-circle"></i> About Wavelength</h1>
+                <p>Discover the story behind premium gaming gear</p>
+            </div>
+            <div class="template-content">
+                <h2>Our Mission</h2>
+                <p>We're passionate about creating the ultimate gaming experience through innovative technology and superior design.</p>
+                <div class="coming-soon">
+                    <i class="fas fa-cog fa-spin"></i> Content Coming Soon
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Notification -->
+    <div id="cart-notification" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(45deg, #00d4ff, #ff0080); color: white; padding: 15px 20px; border-radius: 10px; display: none; z-index: 1001; box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);">
+        <i class="fas fa-check-circle"></i> <span id="notification-text">Item added to cart!</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

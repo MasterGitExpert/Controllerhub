@@ -1,41 +1,39 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wavelength Gaming Gear</title>
+    <title>Wavelength Gaming Gear - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
     <div class="particles" id="particles"></div>
     
     <div class="container">
         <div class="navbar">
-            <a href="#" class="logo" onclick="showPage('home')">
+            <a href="index.html" class="logo">
                 <i class="fas fa-wave-square"></i>
                 Wavelength
             </a>
             <nav>
                 <ul>
-                    <li><a href="#" onclick="showPage('home')" id="nav-home" class="active"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="#" onclick="showPage('products')" id="nav-products"><i class="fas fa-gamepad"></i> Products</a></li>
-                    <li><a href="#" onclick="showPage('about')" id="nav-about"><i class="fas fa-info-circle"></i> About</a></li>
-                    <li><a href="#" onclick="showPage('contact')" id="nav-contact"><i class="fas fa-envelope"></i> Contact</a></li>
-                    <li><a href="#" onclick="showPage('account')" id="nav-account"><i class="fas fa-user"></i> Account</a></li>
-                    <li><a href="#" onclick="showCart()" id="nav-cart"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
+                    <li><a href="{% url 'home' %}" class="active"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{% url 'products' %}"><i class="fas fa-gamepad"></i> Products</a></li>
+                    <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
+                    <li><a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Contact</a></li>
+                    <li><a href="{% url 'account' %}"><i class="fas fa-user"></i> Account</a></li>
+                    <li><a href="#" onclick="showCart()"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
                 </ul>
             </nav>
         </div>
 
         <!-- Home Page -->
-        <div id="home" class="page active">
+        <div class="page active">
             <div class="hero">
                 <h1>Level Up Your Game</h1>
                 <p>Discover premium gaming gear designed for champions. From lightning-fast keyboards to precision mice, we've got everything you need to dominate the competition.</p>
-                <a href="#" onclick="showPage('products')" class="cta-button">
+                <a href="products.html" class="cta-button">
                     <i class="fas fa-shopping-cart"></i> Shop Now
                 </a>
             </div>
@@ -73,102 +71,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Products Page -->
-        <div id="products" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-gamepad"></i> Gaming Products</h1>
-                <p>Explore our complete collection of premium gaming gear</p>
-            </div>
-
-            <div class="products-grid">
-                
-                {% for product in products %}
-                    {% if product.display_item %}
-                        <div class="product-card">
-                            <div style="position: relative;">
-                                {% if product.discount %}
-                                    <div class="sale-badge">Sale!!!</div>
-                                {% endif %} 
-                                {% if product.range.name == "Limited Edition" %}
-                                    <div class="limited-edition-badge">Limited Edition</div>
-                                {% endif %}
-                            </div>
-                            <div class="product-img-container">
-                                {% if product.image %}
-                                <div>
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175px">
-                                </div>
-                                {% else %} 
-                                <div class="product-no-image">
-                                    <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
-                                </div>
-                                {% endif %} 
-                            </div>
-                            <div class="product-info">
-                                <p>{{ product.tagline }}</p>
-                                <h3>{{ product.name }}</h3>
-                                {% if product.discount %}
-                                    <div class="product-price"><span id="dc-price">${{ product.price }}</span>
-                                        &emsp;${{ product.sale_price }}
-                                    </div>
-                                {% else %}
-                                    <div class="product-price">${{ product.price }}</div>
-                                {% endif %}                            
-                                <button class="add-to-cart" onclick="addToCart('{{ product.name }}')">
-                                    <i class="fas fa-cart-plus"></i> Add to Cart
-                                </button>
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Abour Page -->
-        <div id="about" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-info-circle"></i> About Wavelength</h1>
-                <p>Discover the story behind premium gaming gear</p>
-            </div>
-            <div class="template-content">
-                <h2>Our Mission</h2>
-                <p>We're passionate about creating the ultimate gaming experience through innovative technology and superior design.</p>
-                <div class="coming-soon">
-                    <i class="fas fa-cog fa-spin"></i> Content Coming Soon
-                </div>
-            </div>
-        </div>
-
-        <!-- Contact Page -->
-        <div id="contact" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-envelope"></i> Contact Us</h1>
-                <p>Get in touch with our gaming experts</p>
-            </div>
-            <div class="template-content">
-                <h2>Let's Connect</h2>
-                <p>Have questions about our products? Need technical support? We're here to help!</p>
-                <div class="coming-soon">
-                    <i class="fas fa-comments"></i> Contact Form Coming Soon
-                </div>
-            </div>
-        </div>
-
-        <!-- Account Page -->
-        <div id="account" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-user"></i> Your Account</h1>
-                <p>Manage your Wavelength gaming profile</p>
-            </div>
-            <div class="template-content">
-                <h2>Gaming Profile</h2>
-                <p>Track your orders, manage your wishlist, and customize your gaming preferences.</p>
-                <div class="coming-soon">
-                    <i class="fas fa-user-cog"></i> Account Dashboard Coming Soon
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Cart Notification -->
@@ -176,6 +78,6 @@
         <i class="fas fa-check-circle"></i> <span id="notification-text">Item added to cart!</span>
     </div>
 
-    <script src="{% static 'js/script.js' %}"></script>
+    <script src="script.js"></script>
 </body>
 </html>

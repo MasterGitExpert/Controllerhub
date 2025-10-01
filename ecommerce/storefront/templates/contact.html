@@ -1,0 +1,239 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Wavelength Gaming Gear</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="navbar">
+            <a href="{% url 'home' %}" class="logo">
+                <i class="fas fa-wave-square"></i>
+                Wavelength
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'home' %}" class="active"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{% url 'products' %}"><i class="fas fa-gamepad"></i> Products</a></li>
+                    <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
+                    <li><a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Contact</a></li>
+                    <li><a href="{% url 'account' %}"><i class="fas fa-user"></i> Account</a></li>
+                    <li><a href="#" onclick="showCart()"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Contact Page Content -->
+        <div class="page active">
+            <div class="page-header">
+                <h1><i class="fas fa-envelope"></i> Contact Us</h1>
+                <p>Get in touch with our gaming experts - we're here to help!</p>
+            </div>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="contact-container">
+                <div class="contact-form-section">
+                    <div class="form-card">
+                        <div class="form-header">
+                            <i class="fas fa-paper-plane"></i>
+                            <h2>Send us a Message</h2>
+                            <p>Fill out the form below and we'll get back to you as soon as possible</p>
+                        </div>
+
+                        <form method="POST" class="contact-form" id="contactForm">
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label for="id_name">
+                                    <i class="fas fa-user"></i> Your Name
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="error-message">
+                                        {{ form.name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_email">
+                                    <i class="fas fa-envelope"></i> Email Address
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="error-message">
+                                        {{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_subject">
+                                    <i class="fas fa-tag"></i> Subject
+                                </label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                    <div class="error-message">
+                                        {{ form.subject.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_message">
+                                    <i class="fas fa-comment-dots"></i> Message
+                                </label>
+                                {{ form.message }}
+                                <div class="char-counter">
+                                    <span id="charCount">0</span> characters
+                                </div>
+                                {% if form.message.errors %}
+                                    <div class="error-message">
+                                        {{ form.message.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="contact-info-section">
+                    <div class="info-card">
+                        <div class="info-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h3>Other Ways to Reach Us</h3>
+                        </div>
+
+                        <div class="info-items">
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div class="info-content">
+                                    <h4>Visit Us</h4>
+                                    <p>123 Gaming Street<br>Sydney, NSW 2000<br>Australia</p>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div class="info-content">
+                                    <h4>Call Us</h4>
+                                    <p>+61 2 1234 5678</p>
+                                    <p class="info-subtext">Mon-Fri, 9am-6pm AEST</p>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div class="info-content">
+                                    <h4>Email Us</h4>
+                                    <p>support@wavelengthgear.com</p>
+                                    <p class="info-subtext">We respond within 24 hours</p>
+                                </div>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="info-content">
+                                    <h4>Business Hours</h4>
+                                    <p>Monday - Friday: 9am - 6pm</p>
+                                    <p>Saturday: 10am - 4pm</p>
+                                    <p>Sunday: Closed</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="social-links">
+                            <h4>Follow Us</h4>
+                            <div class="social-icons">
+                                <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="fab fa-discord"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-card">
+                        <h4><i class="fas fa-question-circle"></i> Quick FAQ</h4>
+                        <div class="faq-item">
+                            <strong>What's your return policy?</strong>
+                            <p>30-day money-back guarantee on all products</p>
+                        </div>
+                        <div class="faq-item">
+                            <strong>Do you ship internationally?</strong>
+                            <p>Yes! We ship worldwide with tracking</p>
+                        </div>
+                        <div class="faq-item">
+                            <strong>How long is shipping?</strong>
+                            <p>2-5 business days in Australia, 7-14 international</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+    <script>
+        const messageField = document.getElementById('id_message');
+        const charCount = document.getElementById('charCount');
+        
+        if (messageField && charCount) {
+            messageField.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+            charCount.textContent = messageField.value.length;
+        }
+
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', function() {
+                const submitBtn = this.querySelector('.submit-btn');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                submitBtn.disabled = true;
+            });
+        }
+
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-20px)';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
