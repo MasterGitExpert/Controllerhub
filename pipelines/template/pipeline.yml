@@ -1,37 +1,63 @@
-# azure-pipelines.yml
-trigger:
-  branches:
-    include:
-      - search
-
-pool:
-  vmImage: ubuntu-latest
-
-variables:
-  PYTHON_VERSION: '3.12'
-  WORKDIR: 'ecommerce'
-  DJANGO_SETTINGS_MODULE: 'ecommerce.settings'
+parameters:
+  - name: PythonVersion
+    type: string 
+    values: ['3.9','3.10','3.11','3.12','3.13']
+    default: '3.11'
 
 stages:
-- stage: CI
-  displayName: CI - Lint & Test
+- stage: LinterStage
+  displayName: Linter Stage
   jobs:
-  - job: build_test
-    displayName: Lint & Pytest
+  - job: InstallPython
+    displayName: Use Python
+    pool:
+      vmImage: ubuntu-latest
     steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(PYTHON_VERSION)'
-      displayName: 'Use Python $(PYTHON_VERSION)'
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
-    - script: |
-        python -m pip install --upgrade pip setuptools wheel
-        pip install -r requirements.txt
-      displayName: 'Install dependencies'
+  - job: RunLinters
+    displayName: Run Linters
+    dependsOn: InstallPython
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - script: python -m pip install --upgrade pip
+        displayName: 'Upgrade pip'
+      - script: python -m pip install flake8 mypy
+        displayName: 'Install flake8 & mypy'
+      - bash: |
+          echo "Running mypy linter..."
+          python -m mypy . ; true
+        displayName: 'Linter Run (mypy)'
+      - bash: |
+          echo "Running flake8 linter..."
+          python -m flake8 . ; true
+        displayName: 'Linter Run (flake8)'
 
-    - script: |
-        export DJANGO_SETTINGS_MODULE=$(DJANGO_SETTINGS_MODULE)
-        python manage.py migrate --noinput
-        pytest -q
-      displayName: 'Run migrations & pytest'
-      workingDirectory: $(WORKDIR)
+- stage: UnitTestingStage
+  displayName: Unit Testing Stage
+  dependsOn: LinterStage
+  jobs:
+  - job: InstallAndTest
+    displayName: Install deps & pytest
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
+
+      - script: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        displayName: 'Install dependencies'
+
+      - script: |
+          cd ecommerce
+          python manage.py migrate --noinput
+          pytest -q
+        displayName: 'Run migrations & pytest'
