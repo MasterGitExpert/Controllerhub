@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-      - search 
+      - search
 
 parameters:
   - name: PythonVersion
@@ -10,6 +10,6 @@ parameters:
     default: '3.11'
 
 extends:
-  template: pipelines/template/pipeline.yml 
+  template: template/pipeline.yml 
   parameters:
     PythonVersion: ${{ parameters.PythonVersion }}
