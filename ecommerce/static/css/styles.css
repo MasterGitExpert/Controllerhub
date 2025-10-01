@@ -472,9 +472,7 @@ nav ul li a.active {
     .template-content h2 {
         font-size: 2rem;
     }
-
-    /* static/css/contact.css */
-/* Add this as a new CSS file or append to your existing styles.css */
+}
 
 /* Contact Container */
 .contact-container {
@@ -882,5 +880,4 @@ nav ul li a.active {
         padding: 15px 30px;
         font-size: 1rem;
     }
-}
 }

@@ -1,8 +1,4 @@
 
-
-# storefront/views.py
-# Add these imports and view to your existing views.py
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -12,7 +8,6 @@ from .models import ContactMessage
 from django.shortcuts import render
 from .models import Product
 
-# Create your views here.
 
 def contact_view(request):
     """Display and handle contact form"""
@@ -22,7 +17,7 @@ def contact_view(request):
             # Save the contact message to database
             contact_message = form.save()
             
-            # Optional: Send email notification to admin
+            #Send email notification to admin (need to fix this)
             try:
                 send_mail(
                     subject=f'New Contact Form: {contact_message.subject}',
@@ -43,11 +38,8 @@ def contact_view(request):
     else:
         form = ContactForm()
     
-    return render(request, 'storefront/contact.html', {'form': form})
+    return render(request, 'contact.html', {'form': form})
 
-
-# storefront/admin.py
-# Add this to register the model in Django admin
 
 from django.contrib import admin
 from .models import ContactMessage
@@ -70,22 +62,15 @@ class ContactMessageAdmin(admin.ModelAdmin):
     actions = [mark_as_read, mark_as_unread]
 
 
-# storefront/urls.py
-# Add this URL pattern to your existing urls.py
-
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    # ... your existing URL patterns ...
-    
-    # Contact Form URL
+
     path('contact/', views.contact_view, name='contact'),
 ]
 
 
-# ecommerce/settings.py
-# Add these email settings (optional, for sending emails)
 
 # For development - prints emails to console
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -100,14 +85,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
 # ADMIN_EMAIL = 'admin@yoursite.com'
 def home(request):
-    return render(request, 'storefront/index.html')
+    return render(request, 'index.html')
 
 def products(request):
     products = Product.objects.all()
-    return render(request, 'storefront/products.html', {'products': products})
+    return render(request, 'products.html', {'products': products})
 
 def about(request):
-    return render(request, 'storefront/about.html')
+    return render(request, 'about.html')
 
 def account(request):
-    return render(request, 'storefront/account.html')
+    return render(request, 'account.html')
