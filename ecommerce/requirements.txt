@@ -1,0 +1,7 @@
+Django>=5.2,<5.3
+Pillow
+pytest
+pytest-django
+flake8
+mypy
+

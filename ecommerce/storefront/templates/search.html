@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div id="search">
+  <div class="page-header">
+    <h1><i class="fas fa-search"></i> Search</h1>
+    {% if query %}
+      <p>Results for "<strong>{{ query }}</strong>"</p>
+    {% else %}
+      <p>Type a keyword to search products.</p>
+    {% endif %}
+  </div>
+
+  {% if products %}
+    <div class="products-grid">
+      {% for product in products %}
+        <div class="product-card">
+          <a href="{% url 'product' product.id %}" style="text-decoration:none;">
+            <div class="product-img-container">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175">
+              {% else %}
+                <div class="product-no-image">
+                  <p style="font-size:large;">{{ product.name }}<br>(Image Coming Soon)</p>
+                </div>
+              {% endif %}
+            </div>
+          </a>
+          <div class="product-info">
+            <a href="{% url 'product' product.id %}" style="text-decoration:none;">
+              <h3>{{ product.name }}</h3>
+              {% if product.price %}<div class="product-price">${{ product.price }}</div>{% endif %}
+            </a>
+            <button class="add-to-cart" onclick="addToCart('{{ product.name|escapejs }}')">
+              <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="text-align:center;color:#ccc;">
+      {% if query %}No products matched your search.{% else %}Enter a keyword above to search.{% endif %}
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

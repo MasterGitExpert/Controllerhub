@@ -7,5 +7,6 @@ urlpatterns = [
     path("product/<int:pk>", views.product, name="product"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
-    path("account/", views.account, name="account")
+    path("account/", views.account, name="account"),
+    path("search/", views.search, name="search"),
 ]

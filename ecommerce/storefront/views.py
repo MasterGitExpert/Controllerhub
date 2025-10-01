@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import Product
-
+from django.db.models import Q
 # Create your views here.
 
 
@@ -28,3 +28,17 @@ def contact(request):
 
 def account(request):
     return render(request, "account.html")
+
+
+# search
+def search(request):
+    q = (request.GET.get("q") or "").strip()
+    qs = Product.objects.none()
+    if q:
+        qs = Product.objects.filter(
+            Q(name__icontains=q) 
+        ).order_by("name")
+    return render(request, "search.html", {
+        "query": q,
+        "products": qs,
+    })
