@@ -62,15 +62,26 @@ class Product(models.Model):
     """
         Product table to store product information
         - name
+        - tagline
+        - overview
         - description
+        - specifications
         - price
         - stock
         - image
         - display_item
+        - category
+        - range
+        - discount
+        - sale_price
     """
     name = models.CharField(max_length=128)
     tagline = models.CharField(max_length=64, default="", blank=True)
-    description = models.CharField(max_length=256, default="No description")
+    overview = models.TextField(
+        max_length=512, default="One of the finest product.")
+    description = models.TextField(max_length=2048, default="No description")
+    specifications = models.TextField(
+        max_length=2048, default="No specifications")
     price = models.DecimalField(max_digits=8, decimal_places=2, default=5.00)
     stock = models.PositiveIntegerField(default=0)
     image = models.ImageField(

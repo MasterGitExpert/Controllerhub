@@ -13,35 +13,44 @@
             {% for product in products %}
                 {% if product.display_item %}
                     <div class="product-card">
-                        <div style="position: relative;">
-                            {% if product.discount %}
-                                <div class="sale-badge">Sale!!!</div>
-                            {% endif %} 
-                            {% if product.range.name == "Limited Edition" %}
-                                <div class="limited-edition-badge">Limited Edition</div>
-                            {% endif %}
-                        </div>
-                        <div class="product-img-container">
-                            {% if product.image %}
-                            <div>
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175px">
+                        <a href="{% url 'product' product.id %}" style="text-decoration: none;">
+                            <div style="position: relative;">
+                                {% if product.discount %}
+                                    <div class="sale-badge">Sale!!!</div>
+                                {% endif %} 
+                                {% if product.range.name == "Limited Edition" %}
+                                    <div class="limited-edition-badge">Limited Edition</div>
+                                {% endif %}
                             </div>
-                            {% else %} 
-                            <div class="product-no-image">
-                                <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
-                            </div>
-                            {% endif %} 
-                        </div>
-                        <div class="product-info">
-                            <p>{{ product.tagline }}</p>
-                            <h3>{{ product.name }}</h3>
-                            {% if product.discount %}
-                                <div class="product-price"><span id="dc-price">${{ product.price }}</span>
-                                    &emsp;${{ product.sale_price }}
+                            <div class="product-img-container">
+                                {% if product.image %}
+                                <div>
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175px">
                                 </div>
-                            {% else %}
-                                <div class="product-price">${{ product.price }}</div>
-                            {% endif %}                            
+                                {% else %} 
+                                <div class="product-no-image">
+                                    <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
+                                </div>
+                                {% endif %} 
+                            </div>
+                        </a>
+
+                        <div class="product-info">
+                            <a href="{% url 'product' product.id %}" style="text-decoration: none;">
+                                {% if product.tagline %}
+                                    <p class="tagline" style="color: #ffffff; display: flex;">{{ product.tagline }}</p>
+                                {% else %}
+                                    <br>
+                                {% endif %}
+                                <h3>{{ product.name }}</h3>
+                                {% if product.discount %}
+                                    <div class="product-price"><span class="dc-price">${{ product.price }}</span>
+                                        &emsp;${{ product.sale_price }}
+                                    </div>
+                                {% else %}
+                                    <h2 class="product-price" style="color: #ffffff;">${{ product.price }}</h2>
+                                {% endif %}
+                            </a>
                             <button class="add-to-cart" onclick="addToCart('{{ product.name }}')">
                                 <i class="fas fa-cart-plus"></i> Add to Cart
                             </button>

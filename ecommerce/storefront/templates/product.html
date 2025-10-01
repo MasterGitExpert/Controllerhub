@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Product Detail Page -->
+    <div>
+        <div class="page-header" style="text-align: left;">
+            <p style="margin: 0;"><i>
+                <a href="{% url 'products'%}" class="product-path">Products</a> / 
+                <a href="{% url 'products' %}" class="product-path">{{ product.category }}</a> / 
+                <a href="{% url 'product' product.id %}" class="product-path">{{ product.name }}</a>
+                </i>
+            </p>
+            <br>
+            <h1>{{ product.name }}</h1>
+            <p style="margin: -10px 0px 0px 0px; color: rgb(186, 186, 186);"><small>Item Details: {{ product.id }}&emsp;{{ product.stock }}</small></p>
+        </div>
+        <div class="glass-effect">
+            <div class="product-detail-container">
+                <div class="product-left-container">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="500px" style="margin-left: 30px;">
+                    {% else %}
+                        <div class="product-no-image" style="background: none; text-align: center;">
+                            <p style="font-size: large; color: #676767; width: 100%; ">{{ product.name }} <br> (Image Coming Soon)</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="product-right-container">
+                    <div class="taglist">
+                        {% if product.tagline %}
+                            <h3 class="tagline">{{ product.tagline }}</h3>
+                        {% endif %}
+                        {% if product.discount %}
+                            <h3 class="tagline">On Sale!!!</h3>
+                        {% endif %}
+                    </div>
+                    <div class="glass-effect">
+                        {% if product.discount %}
+                            <h2 class="product-price"><span class="dc-price">${{ product.price }}</span>
+                                &emsp;${{ product.sale_price }}
+                            </h2>
+                        {% else %}
+                                    <h2>${{ product.price }}</h2>
+                                    <br>
+                        {% endif %}
+                        <p style="font-weight: bold;">Overview</p>
+                        <p class="raw-data">{{ product.overview }}</p>
+
+                        <div class="product-detail-buttons">
+                            <a href="#" class="cta-button">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </a>
+                            <a href="#" class="product-path" style="margin-bottom: 0; font-size: 1.1rem;">
+                                <i class="fa fa-comments"></i> Add Review
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="product-bottom-container">
+                <details class="glass-effect">
+                    <summary> &ensp;Description</summary>
+                    <br>
+                    <p class="raw-data">{{ product.description }}</p>
+                </details>
+                <br>
+                <details class="glass-effect">
+                    <summary> &ensp;Specifications</summary>
+                    <br>
+                    <p class="raw-data">{{ product.specifications }}</p>
+                </details>
+            </div>
+        </div>
+        <div style="padding-bottom: 5%;"></div>
+    </div>
+{% endblock %}
