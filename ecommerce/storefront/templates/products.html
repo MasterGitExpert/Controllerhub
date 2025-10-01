@@ -12,14 +12,14 @@
     
     <div class="container">
         <div class="navbar">
-            <a href="index.html" class="logo">
+            <a href="{% url 'home' %}" class="logo">
                 <i class="fas fa-wave-square"></i>
                 Wavelength
             </a>
             <nav>
                 <ul>
-                    <li><a href="{% url 'home' %}" class="active"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="{% url 'products' %}"><i class="fas fa-gamepad"></i> Products</a></li>
+                    <li><a href="{% url 'home' %}" ><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{% url 'products' %}" class="active"><i class="fas fa-gamepad"></i> Products</a></li>
                     <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
                     <li><a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Contact</a></li>
                     <li><a href="{% url 'account' %}"><i class="fas fa-user"></i> Account</a></li>
