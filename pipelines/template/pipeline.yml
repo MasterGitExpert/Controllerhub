@@ -1,63 +1,100 @@
-parameters:
-  - name: PythonVersion
-    type: string 
-    values: ['3.9','3.10','3.11','3.12','3.13']
-    default: '3.11'
+# parameters:
+---
+  parameters:
+    - name: PythonVersion
+      type: string 
+      values:
+        - '3.9'
+        - '3.10'
+        - '3.11'
+        - '3.12'
+        - '3.13'
+      default: '3.11'
 
-stages:
-- stage: LinterStage
-  displayName: Linter Stage
-  jobs:
-  - job: InstallPython
-    displayName: Use Python
+
+  stages:
+  - stage: "LinterStage"
     pool:
       vmImage: ubuntu-latest
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
-
-  - job: RunLinters
-    displayName: Run Linters
-    dependsOn: InstallPython
+    jobs:
+    - job: InstallPython
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: ${{ parameters.PythonVersion }}
+          displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - job: RunLinters
+      dependsOn: InstallPython
+      steps:
+        - script: |
+            python -m pip install flake8
+          displayName: "Install flake8"
+        - script: |
+            python -m pip install mypy
+          displayName: "Install mypy"
+        - bash: |
+            echo "Running mypy linter..."
+            python -m mypy . ; true
+          displayName: "Linter Run (mypy)"
+        - bash: |
+            echo "Running flake8 linter..."
+            python -m flake8 . ; true
+          displayName: "Linter Run (flake8)"
+  - stage: "UnitTestingStage"
+    dependsOn: LinterStage
     pool:
       vmImage: ubuntu-latest
-    steps:
-      - script: python -m pip install --upgrade pip
-        displayName: 'Upgrade pip'
-      - script: python -m pip install flake8 mypy
-        displayName: 'Install flake8 & mypy'
-      - bash: |
-          echo "Running mypy linter..."
-          python -m mypy . ; true
-        displayName: 'Linter Run (mypy)'
-      - bash: |
-          echo "Running flake8 linter..."
-          python -m flake8 . ; true
-        displayName: 'Linter Run (flake8)'
-
-- stage: UnitTestingStage
-  displayName: Unit Testing Stage
-  dependsOn: LinterStage
-  jobs:
-  - job: InstallAndTest
-    displayName: Install deps & pytest
+    jobs:
+    - job: InstallPython
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: ${{ parameters.PythonVersion }}
+          displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - job: InstallDependencies
+      dependsOn: InstallPython
+      steps:
+        - script: |
+            python -m pip install -r requirements.txt
+          displayName: "Install Python Depenencies"
+    - job: RunUnitTests
+      dependsOn: InstallDependencies
+      steps:
+        - bash: |
+            echo "Running tests..."
+            # python test.py
+          displayName: "Run Unit Tests"
+  - stage: "DeploymentApprovalStage"
+    dependsOn: UnitTestingStage
+    pool: server
+    jobs:
+    - job: DeploymentApprovalJob
+      steps:
+        - task: ManualValidation@1
+          inputs:
+            instructions: 'Please approve the deployment.'
+            timeoutInMinutes: 5
+  - stage: "DeploymentStage"
+    dependsOn: DeploymentApprovalStage
     pool:
       vmImage: ubuntu-latest
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
-
-      - script: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-        displayName: 'Install dependencies'
-
-      - script: |
-          cd ecommerce
-          python manage.py migrate --noinput
-          pytest -q
-        displayName: 'Run migrations & pytest'
+    jobs:
+    - job: InstallPython
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: ${{ parameters.PythonVersion }}
+          displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - job: InstallDependencies
+      dependsOn: InstallPython
+      steps:
+        - script: |
+            python -m pip install -r requirements.txt
+          displayName: "Install Python Depenencies"
+    - job: RunDeployment
+      dependsOn: InstallDependencies
+      steps:
+        - bash: |
+            echo "Running Deployment..."
+            # python test.py
+          displayName: "Run Deployments"

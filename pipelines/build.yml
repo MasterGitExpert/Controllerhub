@@ -5,11 +5,16 @@ trigger:
 
 parameters:
   - name: PythonVersion
-    type: string
-    values: ['3.9','3.10','3.11','3.12','3.13']
+    type: string 
+    values:
+      - '3.9'
+      - '3.10'
+      - '3.11'
+      - '3.12'
+      - '3.13'
     default: '3.11'
 
 extends:
-  template: template/pipeline.yml 
+  template: template/pipeline.yml
   parameters:
     PythonVersion: ${{ parameters.PythonVersion }}
