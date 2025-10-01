@@ -1,5 +1,4 @@
 """Django data models for the ecommerce storefront application."""
-from tabnanny import verbose
 from django.db import models
 import datetime
 
@@ -27,7 +26,7 @@ class Customer(models.Model):
 
 class ProductCategory(models.Model):
     """
-        ProductCategory table to store product category information like 
+        ProductCategory table to store product category information like
         chairs, keyboards, mouse etc.
 
         - name
@@ -122,7 +121,8 @@ class Order(models.Model):
     status = models.CharField(max_length=32, default="In Transit")
 
     def __str__(self) -> str:
-        return f"Order {self.order_id} by {self.customer.first_name} {self.customer.last_name} - {self.status}"
+        return f"Order {self.order_id} by {self.customer.first_name} " \
+               f"{self.customer.last_name} - {self.status}"
 
 
 class OrderItem(models.Model):
@@ -137,4 +137,5 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self) -> str:
-        return f"Order Item {self.order.order_id}: {self.product.name} x {self.quantity} = ${self.product.price * self.quantity}"
+        return f"Order Item {self.order.order_id}: {self.product.name} x " \
+               f"{self.quantity} = ${self.product.price * self.quantity}"

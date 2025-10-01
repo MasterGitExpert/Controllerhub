@@ -12,9 +12,11 @@ def products(request):
     products = Product.objects.all().order_by('name')
     return render(request, "products.html", {'products': products})
 
+
 def product(request, pk):
     product = Product.objects.get(id=pk)
     return render(request, "product.html", {'product': product})
+
 
 def about(request):
     return render(request, "about.html")
