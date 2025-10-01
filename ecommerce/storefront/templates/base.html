@@ -25,7 +25,13 @@
                     <li><a href="{% url 'about' %}" id="nav-about"><i class="fas fa-info-circle"></i> About</a></li>
                     <li><a href="{% url 'contact' %}" id="nav-contact"><i class="fas fa-envelope"></i> Contact</a></li>
                     <li><a href="{% url 'account' %}" id="nav-account"><i class="fas fa-user"></i> Account</a></li>
-                    <li><a href="#"  id="nav-cart"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
+                    <li><a href="{% url 'cart' %}" id="nav-cart">
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            <span id="cart-count" class="cart-badge">
+                                {{ request.session.cart|length|default:0 }}
+                            </span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
