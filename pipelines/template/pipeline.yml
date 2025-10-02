@@ -1,126 +1,110 @@
-parameters:
-  - name: PythonVersion
-    type: string
-    values: ['3.9','3.10','3.11','3.12','3.13']
-    default: '3.11'
+# parameters:
+---
+  parameters:
+    - name: PythonVersion
+      type: string 
+      values:
+        - '3.9'
+        - '3.10'
+        - '3.11'
+        - '3.12'
+        - '3.13'
+      default: '3.11'
 
-stages:
-- stage: LinterStage
-  pool:
-    vmImage: ubuntu-latest
-  jobs:
-  - job: InstallPython
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
-  - job: RunLinters
-    dependsOn: InstallPython
+  stages:
+  - stage: "LinterStage"
     pool:
       vmImage: ubuntu-latest
-    steps:
-      - script: python -m pip install --upgrade pip
-        displayName: 'Upgrade pip'
-      - script: python -m pip install flake8 mypy
-        displayName: 'Install flake8 & mypy'
-      - bash: |
-          echo "Running mypy linter..."
-          python -m mypy . || true
-        displayName: 'Linter Run (mypy)'
-      - bash: |
-          echo "Running flake8 linter..."
-          python -m flake8 . || true
-        displayName: 'Linter Run (flake8)'
-
-- stage: UnitTestingStage
-  dependsOn: LinterStage
-  pool:
-    vmImage: ubuntu-latest
-  jobs:
-  - job: InstallPython
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
-
-  - job: InstallDependencies
-    dependsOn: InstallPython
-    steps:
-      - script: |
-          python -m pip install --upgrade pip
-          if [ -f ecommerce/requirements.txt ]; then
-            pip install -r ecommerce/requirements.txt
-          elif [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-          pip install pytest pytest-django
-        displayName: 'Install Python Dependencies'
-
-  - job: RunUnitTests
-    dependsOn: InstallDependencies
-    steps:
-      - bash: |
-          set -e
-          mkdir -p test-results
-          cd ecommerce
-          export DJANGO_SETTINGS_MODULE=ecommerce.settings
-          export PYTHONPATH="$(pwd):${PYTHONPATH:-}"
-          echo "PYTHONPATH=$PYTHONPATH"
-          pytest -q --disable-warnings --maxfail=1 \
-                 --junitxml=../test-results/pytest.xml
-        displayName: 'Execute pytest'
-      - task: PublishTestResults@2
-        inputs:
-          testResultsFormat: 'JUnit'
-          testResultsFiles: 'test-results/pytest.xml'
-          testRunTitle: 'Run unit tests - Release'
-          failTaskOnFailedTests: true
-        displayName: 'Publish pytest results'
-      - task: PublishBuildArtifacts@1
-        inputs:
-          PathtoPublish: 'test-results'
-          ArtifactName: 'test-results'
-        displayName: 'Publish Artifact: test-results'
-
-- stage: DeploymentApprovalStage
-  dependsOn: UnitTestingStage
-  pool: server
-  jobs:
-  - job: DeploymentApprovalJob
-    steps:
-      - task: ManualValidation@1
-        inputs:
-          instructions: 'Please approve the deployment.'
-          timeoutInMinutes: 5
-
-- stage: DeploymentStage
-  dependsOn: DeploymentApprovalStage
-  pool:
-    vmImage: ubuntu-latest
-  jobs:
-  - job: InstallPython
-    steps:
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
-  - job: InstallDependencies
-    dependsOn: InstallPython
-    steps:
-      - script: |
-          python -m pip install --upgrade pip
-          if [ -f ecommerce/requirements.txt ]; then
-            pip install -r ecommerce/requirements.txt
-          elif [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-        displayName: 'Install Python Dependencies'
-  - job: RunDeployment
-    dependsOn: InstallDependencies
-    steps:
-      - bash: |
-          echo "Running Deployment..."
-        displayName: 'Run Deployments'
+    jobs:
+    - job: InstallPython
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: ${{ parameters.PythonVersion }}
+          displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - job: RunLinters
+      dependsOn: InstallPython
+      steps:
+        - script: |
+            python -m pip install flake8
+          displayName: "Install flake8"
+        - script: |
+            python -m pip install mypy
+          displayName: "Install mypy"
+        - bash: |
+            echo "Running mypy linter..."
+            python -m mypy . ; true
+          displayName: "Linter Run (mypy)"
+        - bash: |
+            echo "Running flake8 linter..."
+            python -m flake8 . ; true
+          displayName: "Linter Run (flake8)"
+  - stage: "UnitTestingStage"
+    dependsOn: LinterStage
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+    - job: RunUnitTests
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: ${{ parameters.PythonVersion }}
+          displayName: 'Use Python ${{ parameters.PythonVersion }}'
+        
+        - script: |
+            python -m pip install --upgrade pip
+            python -m pip install -r requirements.txt
+          displayName: "Install Python Dependencies"
+        
+        - script: |
+            cd ecommerce
+            python manage.py migrate
+          displayName: "Run Django Migrations"
+        
+        - bash: |
+            echo "Running Django unit tests..."
+            cd ecommerce
+            python manage.py test storefront.tests.ContactFormTestCase --verbosity=2
+          displayName: "Run Contact Form Unit Tests"
+        
+        - task: PublishTestResults@2
+          condition: succeededOrFailed()
+          inputs:
+            #testResultsFiles: '**/test-*.xml'
+            testRunTitle: 'Django Tests - Python ${{ parameters.PythonVersion }}'
+          displayName: 'Publish Test Results'
+  - stage: "DeploymentApprovalStage"
+    dependsOn: UnitTestingStage
+    pool: server
+    jobs:
+    - job: DeploymentApprovalJob
+      steps:
+        - task: ManualValidation@1
+          inputs:
+            instructions: 'Please approve the deployment.'
+            timeoutInMinutes: 5
+  - stage: "DeploymentStage"
+    dependsOn: DeploymentApprovalStage
+    pool:
+      vmImage: ubuntu-latest
+    jobs:
+    - job: InstallPython
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: ${{ parameters.PythonVersion }}
+          displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - job: InstallDependencies
+      dependsOn: InstallPython
+      steps:
+        - script: |
+            python -m pip install -r requirements.txt
+          displayName: "Install Python Dependencies"
+    - job: RunDeployment
+      dependsOn: InstallDependencies
+      steps:
+        - bash: |
+            echo "Running Deployment..."
+            # Add your deployment commands here
+          displayName: "Run Deployments"
