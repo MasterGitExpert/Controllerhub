@@ -1,3 +1,4 @@
+# ---------- Template: pipelines/template/pipeline.yml ----------
 parameters:
   - name: PythonVersion
     type: string
@@ -5,109 +6,136 @@ parameters:
     default: '3.11'
 
 stages:
-# ---------- Lint ----------
+# ---------------- LINT ----------------
 - stage: LinterStage
   displayName: "Lint"
   jobs:
-  - job: InstallPython
-    displayName: Use Python
-    pool: { vmImage: 'ubuntu-latest' }
+  - job: UsePython
+    displayName: "Use Python"
+    pool: { vmImage: ubuntu-latest }
     steps:
       - task: UsePythonVersion@0
+        displayName: "Use Python ${{ parameters.PythonVersion }}"
         inputs:
           versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
   - job: RunLinters
-    displayName: Run Linters
-    dependsOn: InstallPython
-    pool: { vmImage: 'ubuntu-latest' }
+    displayName: "Run Linters"
+    dependsOn: UsePython
+    pool: { vmImage: ubuntu-latest }
     steps:
-      - script: python -m pip install --upgrade pip && pip install flake8 mypy
+      - script: python -m pip install --upgrade pip
+        displayName: "Upgrade pip"
+      - script: python -m pip install flake8 mypy
         displayName: "Install flake8 & mypy"
       - bash: |
           echo "Running mypy..."
-          python -m mypy . || true
-        displayName: "Linter Run (mypy)"
+          python -m mypy . ; true
+        displayName: "mypy (non-blocking)"
       - bash: |
           echo "Running flake8..."
-          python -m flake8 . || true
-        displayName: "Linter Run (flake8)"
+          python -m flake8 . ; true
+        displayName: "flake8 (non-blocking)"
 
-# ---------- Unit Tests ----------
-- stage: "UnitTestingStage"
+# ---------------- UNIT TESTS ----------------
+- stage: UnitTestingStage
+  displayName: "Unit Tests"
   dependsOn: LinterStage
   jobs:
   - job: InstallPython
-    pool:
-      vmImage: ubuntu-latest
+    displayName: "Use Python"
+    pool: { vmImage: ubuntu-latest }
     steps:
       - task: UsePythonVersion@0
+        displayName: "Use Python ${{ parameters.PythonVersion }}"
         inputs:
           versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
   - job: InstallDependencies
+    displayName: "Install Dependencies"
     dependsOn: InstallPython
-    pool:
-      vmImage: ubuntu-latest
+    pool: { vmImage: ubuntu-latest }
     steps:
-      - script: |
+      - bash: |
+          set -eux
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f ecommerce/requirements.txt ]; then
+            pip install -r ecommerce/requirements.txt
+          fi
           pip install pytest pytest-django
         displayName: "Install Python Dependencies"
 
   - job: RunUnitTests
+    displayName: "Run Unit Tests"
     dependsOn: InstallDependencies
-    pool:
-      vmImage: ubuntu-latest
+    pool: { vmImage: ubuntu-latest }
     steps:
       - bash: |
+          set -eux
           export PYTHONPATH="$(pwd)/ecommerce:${PYTHONPATH}"
           echo "PYTHONPATH=$PYTHONPATH"
-          pytest -q --maxfail=1 --disable-warnings --tb=short
+
+          mkdir -p test-results
+          pytest -q --maxfail=1 --disable-warnings --junitxml=test-results/pytest.xml
         displayName: "Execute pytest"
 
-# ---------- Approval ----------
+      - task: PublishTestResults@2
+        displayName: "Publish pytest results"
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "test-results/pytest.xml"
+          failTaskOnFailedTests: true
+
+# ---------------- APPROVAL ----------------
 - stage: DeploymentApprovalStage
   displayName: "Approval"
   dependsOn: UnitTestingStage
   pool: server
   jobs:
   - job: DeploymentApprovalJob
-    displayName: "Manual approval"
+    displayName: "Manual Approval"
     steps:
       - task: ManualValidation@1
         inputs:
-          instructions: 'Please approve the deployment.'
+          instructions: "Please approve the deployment."
           timeoutInMinutes: 5
 
+# ---------------- DEPLOY----------------
 - stage: DeploymentStage
   displayName: "Deploy"
   dependsOn: DeploymentApprovalStage
   jobs:
   - job: InstallPython
-    displayName: Use Python
-    pool: { vmImage: 'ubuntu-latest' }
+    displayName: "Use Python"
+    pool: { vmImage: ubuntu-latest }
     steps:
       - task: UsePythonVersion@0
+        displayName: "Use Python ${{ parameters.PythonVersion }}"
         inputs:
           versionSpec: ${{ parameters.PythonVersion }}
-        displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
   - job: InstallDependencies
-    displayName: Install Dependencies
+    displayName: "Install Dependencies"
     dependsOn: InstallPython
-    pool: { vmImage: 'ubuntu-latest' }
+    pool: { vmImage: ubuntu-latest }
     steps:
-      - script: pip install -r requirements.txt
+      - bash: |
+          set -eux
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f ecommerce/requirements.txt ]; then
+            pip install -r ecommerce/requirements.txt
+          fi
         displayName: "Install Python Dependencies"
 
   - job: RunDeployment
-    displayName: "Run Deployment (placeholder)"
+    displayName: "Run Deployment"
     dependsOn: InstallDependencies
-    pool: { vmImage: 'ubuntu-latest' }
+    pool: { vmImage: ubuntu-latest }
     steps:
-      - bash: echo "Running Deployment..."
-        displayName: "Run Deployments"
+      - bash: |
+          echo "Running Deployment..."
+        displayName: "Deploy (placeholder)"
