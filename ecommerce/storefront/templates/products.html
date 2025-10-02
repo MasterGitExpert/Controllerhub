@@ -1,28 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<<<<<<< HEAD
-<div id="products">
-  <div class="page-header">
-      <h1><i class="fas fa-gamepad"></i> Gaming Products</h1>
-      <p>Explore our complete collection of premium gaming gear</p>
-  </div>
-
-  <div class="products-grid">
-    {% for product in products %}
-      {% if product.display_item %}
-      <div class="product-card">
-        <div style="position: relative;">
-          {% if product.discount %}<div class="sale-badge">Sale!!!</div>{% endif %}
-          {% if product.range.name == "Limited Edition" %}<div class="limited-edition-badge">Limited Edition</div>{% endif %}
-=======
     <!-- Products Page -->
     <div id="products">
         <!-- Header -->
         <div class="page-header">
             <h1><i class="fas fa-gamepad"></i> Gaming Products</h1>
             <p>Explore our complete collection of premium gaming gear</p>
->>>>>>> 3c45cac0b252a082c651989f7749634ebb396a36
         </div>
         <!-- Search and Filter Functionality -->
         <div class="glass-effect">
@@ -46,43 +30,6 @@
                                 <option class="sort-option" value="alphabetical">Name A to Z</option>
                             {% endif %}
 
-<<<<<<< HEAD
-        <div class="product-img-container">
-          {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175">
-          {% else %}
-            <div class="product-no-image">
-              <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
-            </div>
-          {% endif %}
-        </div>
-
-        <div class="product-info">
-          <p>{{ product.tagline }}</p>
-          <h3>{{ product.name }}</h3>
-          {% if product.discount %}
-            <div class="product-price"><span id="dc-price">${{ product.price }}</span>&emsp;${{ product.sale_price }}</div>
-          {% else %}
-            <div class="product-price">${{ product.price }}</div>
-          {% endif %}
-
-            <form action="{% url 'add_to_cart' product.id %}" method="post" class="add-to-cart-form">
-            {% csrf_token %}
-            <input type="hidden" name="qty" value="1">
-            <button class="add-to-cart">
-                <i class="fas fa-cart-plus"></i> Add to Cart
-            </button>
-            </form>
-
-        </div>
-      </div>
-      {% endif %}
-    {% endfor %}
-  </div>
-</div>
-
-
-=======
                             {% if sort == "non-alphabetical" %}
                                 <option class="sort-option" value="non-alphabetical" selected="selected">Name Z to A</option>
                             {% else %}
@@ -165,9 +112,13 @@
                                     <h2 class="product-price" style="color: #ffffff;">${{ product.price }}</h2>
                                 {% endif %}
                             </a>
-                            <button class="add-to-cart" onclick="addToCart('{{ product.name }}')">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
+                            <form action="{% url 'add_to_cart' product.id %}" method="post" class="add-to-cart-form">
+                              {% csrf_token %}
+                              <input type="hidden" name="qty" value="1">
+                              <button class="add-to-cart">
+                                  <i class="fas fa-cart-plus"></i> Add to Cart
+                              </button>
+                            </form>
                         </div>
                     </div>
                 {% endif %}
@@ -182,5 +133,4 @@
             window.location.href = "{% url 'products' %}";
         }
     </script>
->>>>>>> 3c45cac0b252a082c651989f7749634ebb396a36
 {% endblock %}
