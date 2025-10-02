@@ -62,6 +62,7 @@
       steps:
         - bash: |
             echo "Running tests..."
+            python ecommerce/manage.py test storefront; true
             # python test.py
           displayName: "Run Unit Tests"
   - stage: "DeploymentApprovalStage"
