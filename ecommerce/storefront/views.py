@@ -1,8 +1,9 @@
-from django.shortcuts import render
-from .models import Product
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from .models import Product, Customer, Order, OrderItem
 
-# Create your views here.
-
+CART_SESSION_KEY = "cart"
 
 def home(request):
     return render(request, "index.html")
@@ -71,3 +72,116 @@ def contact(request):
 
 def account(request):
     return render(request, "account.html")
+
+def _get_cart(session):
+    return session.setdefault(CART_SESSION_KEY, {})
+
+def _cart_items(cart):
+    if not cart:
+        return []
+    products = {p.id: p for p in Product.objects.filter(id__in=[int(pid) for pid in cart.keys()])}
+    items = []
+    for pid, qty in cart.items():
+        p = products.get(int(pid))
+        if not p:
+            continue
+        q = int(qty)
+        unit_price = p.sale_price if getattr(p, "discount", False) else p.price
+        items.append({"product": p, "quantity": q, "unit_price": unit_price, "subtotal": q * unit_price})
+    return items
+
+
+def _totals(items):
+    total = sum(i["subtotal"] for i in items)
+    count = sum(i["quantity"] for i in items)
+    return total, count
+
+def cart(request):
+    cart_dict = _get_cart(request.session)
+    items = _cart_items(cart_dict)
+    total, count = _totals(items)
+    return render(request, "cart.html", {"items": items, "total": total, "count": count})
+
+@require_POST
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    qty = max(1, int(request.POST.get("qty", 1)))
+
+    if product.stock and qty > product.stock:
+        qty = product.stock
+
+    cart_dict = _get_cart(request.session)
+    pid = str(product.id)
+    new_qty = int(cart_dict.get(pid, 0)) + qty
+    if product.stock and new_qty > product.stock:
+        new_qty = product.stock
+
+    cart_dict[pid] = new_qty
+    request.session.modified = True
+
+    messages.success(request, f"Added {qty} × {product.name} to cart.")
+    return redirect("cart")
+
+
+@require_POST
+def remove_from_cart(request, product_id):
+    cart_dict = _get_cart(request.session)
+    pid = str(product_id)
+    if pid in cart_dict:
+        del cart_dict[pid]
+        request.session.modified = True
+        messages.info(request, "Item removed from cart.")
+    return redirect("cart")
+
+@require_POST
+def clear_cart(request):
+    request.session[CART_SESSION_KEY] = {}
+    request.session.modified = True
+    messages.info(request, "Cart cleared.")
+    return redirect("cart")
+
+def checkout(request):
+    cart_dict = _get_cart(request.session)
+    items = _cart_items(cart_dict)
+    if not items:
+        messages.warning(request, "Your cart is empty.")
+        return redirect("home")
+
+    total, _ = _totals(items)
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        address = request.POST.get("address", "").strip()
+
+        if not all([first_name, last_name, email, phone, address]):
+            messages.error(request, "Please fill in all fields.")
+            return render(request, "checkout.html", {"items": items, "total": total})
+
+        customer, _ = Customer.objects.get_or_create(
+            email=email,
+            defaults={"first_name": first_name, "last_name": last_name, "phone": phone, "password": "guest"},
+        )
+
+        order = Order.objects.create(customer=customer, address=address)
+
+        for i in items:
+            p = i["product"]
+            qty = i["quantity"]
+            OrderItem.objects.create(order=order, product=p, quantity=qty)
+            if p.stock is not None:
+                p.stock = max(0, p.stock - qty)
+                p.save(update_fields=["stock"])
+
+        request.session[CART_SESSION_KEY] = {}
+        request.session.modified = True
+
+        return redirect("checkoutsuccess", order_id=order.id)
+
+    return render(request, "checkout.html", {"items": items, "total": total})
+
+def checkoutsuccess(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    return render(request, "checkoutsuccess.html", {"order": order})
