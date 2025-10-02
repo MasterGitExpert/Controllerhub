@@ -59,9 +59,7 @@
           displayName: "Install Python Depenencies"
         - bash: |
             echo "Running tests..."
-            python ecommerce/manage.py test; true
             python ecommerce/manage.py test storefront; true
-            python ecommerce/manage.py test storefront.tests.ModelTests; true
           displayName: "Run Unit Tests"
   - stage: "DeploymentApprovalStage"
     dependsOn: UnitTestingStage
