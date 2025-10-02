@@ -51,15 +51,12 @@
           inputs:
             versionSpec: ${{ parameters.PythonVersion }}
           displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: InstallDependencies
-      dependsOn: InstallPython
+    - job: RunUnitTests
+      dependsOn: InstallDependencies
       steps:
         - script: |
             python -m pip install -r requirements.txt
           displayName: "Install Python Depenencies"
-    - job: RunUnitTests
-      dependsOn: InstallDependencies
-      steps:
         - bash: |
             echo "Running tests..."
             python ecommerce/manage.py test; true
