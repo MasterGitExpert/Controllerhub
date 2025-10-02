@@ -55,15 +55,27 @@
       dependsOn: InstallPython
       steps:
         - script: |
+            python -m pip install --upgrade pip
             python -m pip install -r requirements.txt
-          displayName: "Install Python Depenencies"
+          displayName: "Install Python Dependencies"
     - job: RunUnitTests
       dependsOn: InstallDependencies
       steps:
+        - script: |
+            cd ecommerce
+            python manage.py migrate
+          displayName: "Run Django Migrations"
         - bash: |
-            echo "Running tests..."
-            # python test.py
-          displayName: "Run Unit Tests"
+            echo "Running Django unit tests..."
+            cd ecommerce
+            python manage.py test storefront.tests.ContactFormTestCase --verbosity=2
+          displayName: "Run Contact Form Unit Tests"
+        - task: PublishTestResults@2
+          condition: succeededOrFailed()
+          inputs:
+            testResultsFiles: '**/test-*.xml'
+            testRunTitle: 'Django Tests - Python ${{ parameters.PythonVersion }}'
+          displayName: 'Publish Test Results'
   - stage: "DeploymentApprovalStage"
     dependsOn: UnitTestingStage
     pool: server
@@ -90,11 +102,11 @@
       steps:
         - script: |
             python -m pip install -r requirements.txt
-          displayName: "Install Python Depenencies"
+          displayName: "Install Python Dependencies"
     - job: RunDeployment
       dependsOn: InstallDependencies
       steps:
         - bash: |
             echo "Running Deployment..."
-            # python test.py
+            # Add your deployment commands here
           displayName: "Run Deployments"
