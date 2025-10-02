@@ -4,18 +4,22 @@
     <!-- Product Detail Page -->
     <div>
         <div class="page-header" style="text-align: left;">
+            <!-- Shows product path "product / category / product name"  -->
             <p style="margin: 0;"><i>
                 <a href="{% url 'products'%}" class="product-path">Products</a> / 
-                <a href="{% url 'products' %}" class="product-path">{{ product.category }}</a> / 
+                <a href="" class="product-path">{{ product.category }}</a> / 
                 <a href="{% url 'product' product.id %}" class="product-path">{{ product.name }}</a>
                 </i>
             </p>
             <br>
+            <!-- Header -->
             <h1>{{ product.name }}</h1>
+            <!-- Product ID and Stock Info-->
             <p style="margin: -10px 0px 0px 0px; color: rgb(186, 186, 186);"><small>Item Details: {{ product.id }}&emsp;{{ product.stock }}</small></p>
         </div>
         <div class="glass-effect">
             <div class="product-detail-container">
+                <!-- Large product image on LHS -->
                 <div class="product-left-container">
                     {% if product.image %}
                         <img src="{{ product.image.url }}" alt="{{ product.name }}" width="500px" style="margin-left: 30px;">
@@ -25,6 +29,7 @@
                         </div>
                     {% endif %}
                 </div>
+                <!-- Product price, CTA and overview on RHS -->
                 <div class="product-right-container">
                     <div class="taglist">
                         {% if product.tagline %}
@@ -58,12 +63,14 @@
                 </div>
             </div>
             <div class="product-bottom-container">
+                <!-- Retractable Product description -->
                 <details class="glass-effect">
                     <summary> &ensp;Description</summary>
                     <br>
                     <p class="raw-data">{{ product.description }}</p>
                 </details>
                 <br>
+                <!-- Retractable Product Specifications -->
                 <details class="glass-effect">
                     <summary> &ensp;Specifications</summary>
                     <br>
