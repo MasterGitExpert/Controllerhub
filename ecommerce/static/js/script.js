@@ -1,15 +1,12 @@
-// Page Navigation
-function showPage(pageId) {
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.classList.remove('active'));
-    
-    // Show selected page
-    document.getElementById(pageId).classList.add('active');
-    
-    // Update active nav link
-    const navLinks = document.querySelectorAll('nav a');
-    navLinks.forEach(link => link.classList.remove('active'));
-    document.getElementById('nav-' + pageId).classList.add('active');
+// Keyboard navigation - now navigates between actual pages
+function handleKeyboardNavigation(e) {
+    if (e.key >= '1' && e.key <= '5') {
+        const pages = ['/', '/products/', '/about/', '/contact/', '/account/'];
+        const pageIndex = parseInt(e.key) - 1;
+        if (pageIndex < pages.length) {
+            window.location.href = pages[pageIndex];
+        }
+    }
 }
 
 // Shopping Cart Functionality
