@@ -1,2 +1,4 @@
 django
 pillow
+mypy
+flake8

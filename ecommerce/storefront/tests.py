@@ -10,18 +10,18 @@ class ModelTests(TestCase):
                             tagline="New",
                             overview="The fastest, most powerful Xbox ever.",
                             description="Experience the new generation of " +
-                                "games and entertainment with Xbox Series " +
-                                "X. With its powerful hardware and " +
-                                "innovative features, Xbox Series X " + 
-                                "delivers stunning graphics, faster load " +
-                                "times, and immersive gameplay. Get ready " +
-                                "to power your dreams and take your gaming " +
-                                "to the next level.",
+                            "games and entertainment with Xbox Series " +
+                            "X. With its powerful hardware and " +
+                            "innovative features, Xbox Series X " +
+                            "delivers stunning graphics, faster load " +
+                            "times, and immersive gameplay. Get ready " +
+                            "to power your dreams and take your gaming " +
+                            "to the next level.",
                             specifications="Processor: Custom AMD Zen 2 " +
-                                "CPU, Graphics: Custom AMD RDNA 2 GPU, " +
-                                "Memory: 16GB GDDR6, Storage: 1TB NVMe " +
-                                "SSD, Optical Drive: 4K UHD Blu-ray, " +
-                                "Ports: HDMI 2.1, USB 3.1, Ethernet, Wi-Fi 5",
+                            "CPU, Graphics: Custom AMD RDNA 2 GPU, " +
+                            "Memory: 16GB GDDR6, Storage: 1TB NVMe " +
+                            "SSD, Optical Drive: 4K UHD Blu-ray, " +
+                            "Ports: HDMI 2.1, USB 3.1, Ethernet, Wi-Fi 5",
                             price=549.86,
                             stock=1,
                             # image = "",
@@ -33,19 +33,19 @@ class ModelTests(TestCase):
         self.ps4 = Product(name="PS4 Pro Max",
                            tagline="While Stocks Last",
                            overview="The fastest, most powerful PS4 ever.",
-                           description="Experience the new generation of " + 
-                                "games and entertainment with Xbox Series " +
-                                "X. With its powerful hardware and " +
-                                "innovative features, Xbox Series X " + 
-                                "delivers stunning graphics, faster load " +
-                                "times, and immersive gameplay. Get ready " +
-                                "to power your dreams and take your gaming " +
-                                "to the next level.",
+                           description="Experience the new generation of " +
+                           "games and entertainment with Xbox Series " +
+                           "X. With its powerful hardware and " +
+                           "innovative features, Xbox Series X " +
+                           "delivers stunning graphics, faster load " +
+                           "times, and immersive gameplay. Get ready " +
+                           "to power your dreams and take your gaming " +
+                           "to the next level.",
                            specifications="Processor: Custom AMD Zen 2 " +
-                                "CPU, Graphics: Custom AMD RDNA 2 GPU, " +
-                                "Memory: 16GB GDDR6, Storage: 1TB NVMe " +
-                                "SSD, Optical Drive: 4K UHD Blu-ray, " +
-                                "Ports: HDMI 2.1, USB 3.1, Ethernet, Wi-Fi 5",
+                           "CPU, Graphics: Custom AMD RDNA 2 GPU, " +
+                           "Memory: 16GB GDDR6, Storage: 1TB NVMe " +
+                           "SSD, Optical Drive: 4K UHD Blu-ray, " +
+                           "Ports: HDMI 2.1, USB 3.1, Ethernet, Wi-Fi 5",
                            price=649.64,
                            stock=0,
                            # image = "",
@@ -56,12 +56,12 @@ class ModelTests(TestCase):
                            sale_price=454.99)
 
     def test_sale_price_update_when_no_discount(self):
-        """ 
-            Tests that the sale price is updated correctly when discount is 
+        """
+            Tests that the sale price is updated correctly when discount is
             False sale price should be set to price.
 
-            As sale price is used to sort on products page this test is 
-            important for ensuring product page sort capabilities work as 
+            As sale price is used to sort on products page this test is
+            important for ensuring product page sort capabilities work as
             expected.
         """
 
@@ -76,12 +76,12 @@ class ModelTests(TestCase):
         self.assertEqual(self.xbox.sale_price, 549.86)
 
     def test_sale_price_update_with_discount(self):
-        """ 
+        """
             Tests that the sale price is updated correctly when discount is
             True sale price should remain unchanged
 
-            As sale price is used to sort on products page this test is 
-            important for ensuring product page sort capabilities work as 
+            As sale price is used to sort on products page this test is
+            important for ensuring product page sort capabilities work as
             expected. But we also need to ensure that products that are on
             discount retain their sale price.
         """
@@ -97,7 +97,7 @@ class ModelTests(TestCase):
         self.assertEqual(self.ps4.sale_price, 454.99)
 
     def test_when_product_is_in_stock(self):
-        """ 
+        """
             Tests that is_in_stock function returns True when stock > 0.
         """
         print("Testing is_in_stock function when product is in stock...")
@@ -109,7 +109,7 @@ class ModelTests(TestCase):
         self.assertEqual(self.xbox.stock, 1)
 
     def test_when_product_is_out_of_stock(self):
-        """ 
+        """
             Tests that is_in_stock function returns False when stock == 0.
         """
         print("Testing is_in_stock function when product is out of stock...")
@@ -121,7 +121,7 @@ class ModelTests(TestCase):
         self.assertEqual(self.ps4.stock, 0)
 
     def test_check_stock_when_product_is_in_stock(self):
-        """ 
+        """
             Tests that check_stock doesn't update tagline when stock > 0.
         """
         print("Testing product is in stock and tagline remains unchanged...")
@@ -133,10 +133,10 @@ class ModelTests(TestCase):
         # Test product stock and tagline remains unchanged
         self.assertEqual(self.xbox.stock, 1)
         self.assertEqual(self.xbox.tagline, "New")
-    
+
     def test_check_stock_when_product_is_out_of_stock(self):
-        """ 
-            Tests that check_stock updates tagline to Out of Stock when 
+        """
+            Tests that check_stock updates tagline to Out of Stock when
             stock == 0.
         """
         print("Testing product is in stock and tagline remains unchanged...")

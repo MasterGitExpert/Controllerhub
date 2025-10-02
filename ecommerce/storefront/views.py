@@ -9,9 +9,9 @@ def home(request):
 
 
 def products(request):
-    """ 
-        Returns a rendered view to display all products with search and 
-        sort functionality 
+    """
+        Returns a rendered view to display all products with search and
+        sort functionality
     """
     # Get all products that are marked for display
     products = Product.objects.all().filter(display_item=True)
@@ -48,12 +48,13 @@ def products(request):
     else:
         # Return all display-able products ordered alphabetically by default
         products = products.order_by('name')
-        return render(request, "products.html", {'products': products, "count": len(products)})
+        return render(request, "products.html", {'products': products,
+                                                 "count": len(products)})
 
 
 def product(request, pk):
-    """ 
-        Returns a rendered view for displaying a single product passed in 
+    """
+        Returns a rendered view for displaying a single product passed in
         the URL.
     """
     product = Product.objects.get(id=pk)

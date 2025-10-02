@@ -62,9 +62,7 @@
       steps:
         - bash: |
             echo "Running tests..."
-            pwd
-            ls -la
-            python manage.py test; true
+            python ecommerce/manage.py test; true
           displayName: "Run Unit Tests"
   - stage: "DeploymentApprovalStage"
     dependsOn: UnitTestingStage
