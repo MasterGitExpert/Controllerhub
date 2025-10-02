@@ -24,7 +24,19 @@
                     <li><a href="{% url 'products' %}" id="nav-products"><i class="fas fa-gamepad"></i> Products</a></li>
                     <li><a href="{% url 'about' %}" id="nav-about"><i class="fas fa-info-circle"></i> About</a></li>
                     <li><a href="{% url 'contact' %}" id="nav-contact"><i class="fas fa-envelope"></i> Contact</a></li>
-                    <li><a href="{% url 'account' %}" id="nav-account"><i class="fas fa-user"></i> Account</a></li>
+                    {% if request.user.is_authenticated %}
+                    <li><a href="#" onclick="showPage('account')" id="nav-account"><i class="fas fa-user"></i> Account</a></li>
+                    <li>
+                    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="as-link">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                    </li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}" id="nav-login"><i class="fas fa-sign-in-alt"></i> Log in</a></li>
+                    {% endif %}
                     <li><a href="{% url 'cart' %}" id="nav-cart">
                             <i class="fas fa-shopping-cart"></i> Cart
                             <span id="cart-count" class="cart-badge">

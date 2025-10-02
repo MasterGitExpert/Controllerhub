@@ -1,12 +1,10 @@
-from django.shortcuts import render
-from .models import Product
-from django.contrib.auth.decorators import login_required
-
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.contrib import messages
 from .models import Product, Customer, Order, OrderItem
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+# Create your views here.
 
 CART_SESSION_KEY = "cart"
 
@@ -70,6 +68,9 @@ def product(request, pk):
 def about(request):
     return render(request, "about.html")
 
+@login_required
+def account(request):
+    return render(request, "account.html")
 
 def contact(request):
     return render(request, "contact.html")

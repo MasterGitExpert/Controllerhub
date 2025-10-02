@@ -1,16 +1,7 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Log in • Wavelength Gaming Gear</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-  <!-- Match index.html includes -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
-  <style>
+{% block content %}
+     <style>
     /* Light tweaks so the form fits your theme */
     .auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
     .auth-card { width: 100%; max-width: 480px; background: rgba(255,255,255,0.04);
@@ -31,26 +22,6 @@
     .errorlist, .form-errors { color: #ff6b6b; margin: 8px 0 0; list-style: none; padding: 0; }
     .navbar { margin-bottom: 28px; } /* reuse your navbar spacing */
   </style>
-</head>
-<body>
-  <div class="particles" id="particles"></div>
-
-  <div class="container">
-    <!-- Navbar (matches index structure; minimal links for auth page) -->
-    <div class="navbar">
-      <a href="/" class="logo">
-        <i class="fas fa-wave-square"></i>
-        Wavelength
-      </a>
-      <nav>
-        <ul>
-          <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
-          <li><a href="/"><i class="fas fa-gamepad"></i> Products</a></li>
-          <li><a href="/"><i class="fas fa-info-circle"></i> About</a></li>
-          <li><a href="/"><i class="fas fa-envelope"></i> Contact</a></li>
-        </ul>
-      </nav>
-    </div>
 
     <!-- Centered auth card -->
     <div class="auth-wrapper">
@@ -96,8 +67,5 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <script src="{% static 'js/script.js' %}"></script>
-</body>
-</html>
+{% endblock %}
+ 

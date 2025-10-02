@@ -1,9 +1,11 @@
 # storefront/tests.py
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.messages import get_messages
+from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from .models import Product, Customer, Order, OrderItem
 
@@ -340,10 +342,7 @@ class ModelTests(TestCase):
         self.assertEqual(self.ps4.stock, 0)
         self.assertEqual(self.ps4.tagline, "Out of Stock")
 
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth import get_user_model
-from django.conf import settings
+
 
 User = get_user_model()
 
