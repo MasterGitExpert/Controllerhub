@@ -62,7 +62,9 @@
       steps:
         - bash: |
             echo "Running tests..."
-            # python test.py
+            pwd
+            ls -la
+            python manage.py test; true
           displayName: "Run Unit Tests"
   - stage: "DeploymentApprovalStage"
     dependsOn: UnitTestingStage

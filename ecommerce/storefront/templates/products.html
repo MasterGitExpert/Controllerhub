@@ -3,17 +3,73 @@
 {% block content %}
     <!-- Products Page -->
     <div id="products">
+        <!-- Header -->
         <div class="page-header">
             <h1><i class="fas fa-gamepad"></i> Gaming Products</h1>
             <p>Explore our complete collection of premium gaming gear</p>
         </div>
+        <!-- Search and Filter Functionality -->
+        <div class="glass-effect">
+            <form id="form" method="post" action="{% url 'products' %}" style="display: flex; justify-content: space-around;">
+                {% csrf_token %}
+                <div class="product-controls">
+                    <label for="search"><strong>Search:</strong></label>
+                    {% if query %}
+                        <input class="form-component" name="search" type="text" id="search" placeholder="Search products..." value="{{ query }}" maxlength="32">
+                    {% else %}
+                        <input class="form-component" name="search" type="text" id="search" placeholder="Search products..." maxlength="32">
+                    {% endif %}
+                </div>
+                <div class="product-controls">
+                    <label for="sort" style="display: inline-block;"><strong>Sort:</strong></label>
+                    <!-- <div id="" style="display: inline-block;"> -->
+                        <select class="form-component" name="sort" id="sort">
+                            {% if sort == "alphabetical" %}
+                                <option class="sort-option" value="alphabetical" selected="selected">Name A to Z</option>
+                            {% else %}
+                                <option class="sort-option" value="alphabetical">Name A to Z</option>
+                            {% endif %}
 
+                            {% if sort == "non-alphabetical" %}
+                                <option class="sort-option" value="non-alphabetical" selected="selected">Name Z to A</option>
+                            {% else %}
+                                <option class="sort-option" value="non-alphabetical">Name Z to A</option>
+                            {% endif %}
+                            
+                            {% if sort == "lowest-price" %}
+                                <option class="sort-option" value="lowest-price" selected="selected">Lowest Price</option>
+                            {% else %}
+                                <option class="sort-option" value="lowest-price">Lowest Price</option>
+                            {% endif %}
+
+                            {% if sort == "highest-price" %}
+                                <option class="sort-option" value="highest-price" selected="selected">Highest Price</option>
+                            {% else %}
+                                <option class="sort-option" value="highest-price">Highest Price</option>
+                            {% endif %}
+                            
+                        </select>
+                    <!-- </div> -->
+                </div>
+                <input class="form-component" type="submit" value="Update Results">
+                <button class="form-component" type="button" onclick="resetForm()">Reset Filters</button>
+            </form>
+        </div>
+        <!-- Total Products Found -->
+        <div>
+            {% if count <= 1 %}
+                <p style="padding: 15px;">Product Found: {{ count }}</p>
+            {% else %}
+                <p style="padding: 15px;">Products Found: {{ count }}</p>
+            {% endif %}
+        </div>
+        <!-- Product Cards -->
         <div class="products-grid">
-            
             {% for product in products %}
                 {% if product.display_item %}
                     <div class="product-card">
                         <a href="{% url 'product' product.id %}" style="text-decoration: none;">
+                            <!-- Add Badges for special products -->
                             <div style="position: relative;">
                                 {% if product.discount %}
                                     <div class="sale-badge">Sale!!!</div>
@@ -22,6 +78,7 @@
                                     <div class="limited-edition-badge">Limited Edition</div>
                                 {% endif %}
                             </div>
+                            <!-- Product Image -->
                             <div class="product-img-container">
                                 {% if product.image %}
                                 <div>
@@ -34,14 +91,18 @@
                                 {% endif %} 
                             </div>
                         </a>
-
+                        <!-- Product Details -->
                         <div class="product-info">
                             <a href="{% url 'product' product.id %}" style="text-decoration: none;">
+                                <!-- Show custom product tagline -->
                                 {% if product.tagline %}
                                     <p class="tagline" style="color: #ffffff; display: flex;">{{ product.tagline }}</p>
                                 {% else %}
                                     <br>
+                                    <br>
+                                    <br>
                                 {% endif %}
+                                <!-- Shows Name and Price -->
                                 <h3>{{ product.name }}</h3>
                                 {% if product.discount %}
                                     <div class="product-price"><span class="dc-price">${{ product.price }}</span>
@@ -60,4 +121,12 @@
             {% endfor %}
         </div>
     </div>
+    <!-- Code for resetting product search and filter functionality -->
+    <script>
+        function resetForm() {
+            console.log("Resetting form...");
+            document.getElementById("form").reset();
+            window.location.href = "{% url 'products' %}";
+        }
+    </script>
 {% endblock %}

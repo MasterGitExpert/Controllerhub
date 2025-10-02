@@ -93,8 +93,23 @@ class Product(models.Model):
         ProductRange, on_delete=models.CASCADE, null=True)
     # Sale information for discounted items
     discount = models.BooleanField(default=False)
-    sale_price = models.DecimalField(
-        max_digits=8, decimal_places=2, default=3.98)
+    sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    def is_in_stock(self) -> bool:
+        """ Returns True if the product is in stock. """
+        return self.stock > 0
+
+    def check_stock(self) -> None:
+        """ Updates tagline if stock is 0 to 'Out of Stock'. """
+        if not self.is_in_stock():
+            self.tagline = "Out of Stock"
+            self.save()
+
+    def update_sale_price(self) -> None:
+        """ Sets sale price to price if the product is not discounted. """
+        if not self.discount:
+            self.sale_price = self.price
+        self.save()
 
     def __str__(self) -> str:
         if self.discount:
@@ -103,7 +118,7 @@ class Product(models.Model):
             price = f"{striked_price} -> ${self.sale_price}"
         else:
             price = f"${self.price}"
-        return f"{self.name} - {self.stock} @ {price} " \
+        return f"{self.name} - {self.stock} @ {price} (${self.sale_price})" \
             f"[{self.category}, {self.range}]"
 
 
@@ -122,7 +137,7 @@ class Order(models.Model):
 
     def __str__(self) -> str:
         return f"Order {self.order_id} by {self.customer.first_name} " \
-               f"{self.customer.last_name} - {self.status}"
+            f"{self.customer.last_name} - {self.status}"
 
 
 class OrderItem(models.Model):
@@ -138,4 +153,4 @@ class OrderItem(models.Model):
 
     def __str__(self) -> str:
         return f"Order Item {self.order.order_id}: {self.product.name} x " \
-               f"{self.quantity} = ${self.product.price * self.quantity}"
+            f"{self.quantity} = ${self.product.price * self.quantity}"
