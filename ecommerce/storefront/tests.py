@@ -139,7 +139,8 @@ class ModelTests(TestCase):
             Tests that check_stock updates tagline to Out of Stock when
             stock == 0.
         """
-        print("Testing product is in stock and tagline remains unchanged...")
+        print("Testing product is out of stock and tagline updates to \"Out " +
+              "of Stock\"...")
         # Test product price and tagline to update to validate setup
         self.assertEqual(self.ps4.stock, 0)
         self.assertEqual(self.ps4.tagline, "While Stocks Last")
