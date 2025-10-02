@@ -35,13 +35,12 @@ stages:
         displayName: "Linter Run (flake8)"
 
 # ---------- Unit Tests ----------
-- stage: UnitTestingStage
-  displayName: "Unit Tests"
+- stage: "UnitTestingStage"
   dependsOn: LinterStage
   jobs:
   - job: InstallPython
-    displayName: Use Python
-    pool: { vmImage: 'ubuntu-latest' }
+    pool:
+      vmImage: ubuntu-latest
     steps:
       - task: UsePythonVersion@0
         inputs:
@@ -49,34 +48,26 @@ stages:
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
   - job: InstallDependencies
-    displayName: Install Dependencies
     dependsOn: InstallPython
-    pool: { vmImage: 'ubuntu-latest' }
+    pool:
+      vmImage: ubuntu-latest
     steps:
       - script: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-django
         displayName: "Install Python Dependencies"
 
   - job: RunUnitTests
-    displayName: Run Unit Tests
     dependsOn: InstallDependencies
-    pool: { vmImage: 'ubuntu-latest' }
+    pool:
+      vmImage: ubuntu-latest
     steps:
-      # 
       - bash: |
           export PYTHONPATH="$(pwd)/ecommerce:${PYTHONPATH}"
-          export DJANGO_SETTINGS_MODULE="ecommerce.settings"
           echo "PYTHONPATH=$PYTHONPATH"
-          pytest -q --junitxml=test-results.xml
+          pytest -q --maxfail=1 --disable-warnings --tb=short
         displayName: "Execute pytest"
-      - task: PublishTestResults@2
-        displayName: "Publish pytest results"
-        inputs:
-          testResultsFormat: "JUnit"
-          testResultsFiles: "test-results.xml"
-          failTaskOnFailedTests: true
-          testRunTitle: "Python Unit Tests"
 
 # ---------- Approval ----------
 - stage: DeploymentApprovalStage
