@@ -45,31 +45,29 @@
     pool:
       vmImage: ubuntu-latest
     jobs:
-    - job: InstallPython
+    - job: RunUnitTests
       steps:
         - task: UsePythonVersion@0
           inputs:
             versionSpec: ${{ parameters.PythonVersion }}
           displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: InstallDependencies
-      dependsOn: InstallPython
-      steps:
+        
         - script: |
             python -m pip install --upgrade pip
             python -m pip install -r requirements.txt
           displayName: "Install Python Dependencies"
-    - job: RunUnitTests
-      dependsOn: InstallDependencies
-      steps:
+        
         - script: |
             cd ecommerce
             python manage.py migrate
           displayName: "Run Django Migrations"
+        
         - bash: |
             echo "Running Django unit tests..."
             cd ecommerce
             python manage.py test storefront.tests.ContactFormTestCase --verbosity=2
           displayName: "Run Contact Form Unit Tests"
+        
         - task: PublishTestResults@2
           condition: succeededOrFailed()
           inputs:
