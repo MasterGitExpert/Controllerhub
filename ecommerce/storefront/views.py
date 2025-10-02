@@ -7,6 +7,7 @@ from .forms import ContactForm
 from .models import ContactMessage
 from django.shortcuts import render
 from .models import Product
+from django.shortcuts import render, redirect, get_object_or_404
 
 
 def contact_view(request):
