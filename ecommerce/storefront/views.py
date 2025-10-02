@@ -96,3 +96,35 @@ def about(request):
 
 def account(request):
     return render(request, 'account.html')
+
+
+def account(request):
+    """Display contact messages"""
+    contact_messages = ContactMessage.objects.all().order_by('-created_at')
+    
+    context = {
+        'contact_messages': contact_messages,
+        'total_messages': contact_messages.count(),
+        'unread_messages': contact_messages.filter(is_read=False).count(),
+    }
+    return render(request, 'account.html', context)
+
+def mark_message_read(request, message_id):
+    """Mark a contact message as read"""
+    message = get_object_or_404(ContactMessage, id=message_id)
+    message.is_read = True
+    message.save()
+    return redirect('account')
+
+def mark_message_unread(request, message_id):
+    """Mark a contact message as unread"""
+    message = get_object_or_404(ContactMessage, id=message_id)
+    message.is_read = False
+    message.save()
+    return redirect('account')
+
+def delete_message(request, message_id):
+    """Delete a contact message"""
+    message = get_object_or_404(ContactMessage, id=message_id)
+    message.delete()
+    return redirect('account')
