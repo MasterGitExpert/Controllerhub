@@ -53,125 +53,50 @@
                     <i class="fas fa-shopping-cart"></i> Shop Now
                 </a>
             </div>
+{% extends 'base.html' %}
 
-            <div class="features">
-                <div class="feature-card">
-                    <i class="fas fa-keyboard"></i>
-                    <h3>Mechanical Keyboards</h3>
-                    <p>Experience tactile perfection with our premium mechanical keyboards featuring custom switches and RGB lighting.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-mouse"></i>
-                    <h3>Gaming Mice</h3>
-                    <p>Precision engineered gaming mice with high DPI sensors and ergonomic designs for marathon gaming sessions.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-headphones"></i>
-                    <h3>Audio Gear</h3>
-                    <p>Immersive surround sound headsets and crystal-clear microphones for competitive gaming communication.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-desktop"></i>
-                    <h3>Monitors</h3>
-                    <p>Ultra-fast refresh rates and stunning 4K displays that bring your games to life with vivid detail.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-chair"></i>
-                    <h3>Gaming Chairs</h3>
-                    <p>Ergonomic gaming chairs designed for comfort during those extended gaming marathons.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-microchip"></i>
-                    <h3>PC Components</h3>
-                    <p>High-performance graphics cards, processors, and cooling solutions to build your dream rig.</p>
-                </div>
-            </div>
+{% block content %}
+    <!-- Home Page -->
+    <div id="home" class="active">
+        <div class="hero">
+            <h1>Level Up Your Game</h1>
+            <p>Discover premium gaming gear designed for champions. From lightning-fast keyboards to precision mice, we've got everything you need to dominate the competition.</p>
+            <a href="{% url 'products' %}" class="cta-button">
+                <i class="fas fa-shopping-cart"></i> Shop Now
+            </a>
         </div>
 
-        <!-- Products Page -->
-        <div id="products" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-gamepad"></i> Gaming Products</h1>
-                <p>Explore our complete collection of premium gaming gear</p>
+        <div class="features">
+            <div class="feature-card">
+                <i class="fas fa-keyboard"></i>
+                <h3>Mechanical Keyboards</h3>
+                <p>Experience tactile perfection with our premium mechanical keyboards featuring custom switches and RGB lighting.</p>
             </div>
-
-            <div class="products-grid">
-                
-                {% for product in products %}
-                {% if product.display_item %}
-                <div class="product-card">
-                    <div class="product-image">
-                        {% if product.image %}
-                        <!-- <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150px" height="150px" style="mix-blend-mode: multiply;"> -->
-                        {% endif %} 
-                        <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
-                        <!-- <i class="fas fa-keyboard">{{ product.name }}</i> -->
-                    </div>
-                    <div class="product-info">
-                        <h3>{{ product.name }}</h3>
-                        <p>{{ product.description }}</p>
-                        <div class="product-price">${{ product.price }}</div>
-                        <button class="add-to-cart" onclick="addToCart('{{ product.name }}')">
-                            <i class="fas fa-cart-plus"></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-                {% endif %}
-                {% endfor %}
+            <div class="feature-card">
+                <i class="fas fa-mouse"></i>
+                <h3>Gaming Mice</h3>
+                <p>Precision engineered gaming mice with high DPI sensors and ergonomic designs for marathon gaming sessions.</p>
             </div>
-        </div>
-
-        <!-- Abour Page -->
-        <div id="about" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-info-circle"></i> About Wavelength</h1>
-                <p>Discover the story behind premium gaming gear</p>
+            <div class="feature-card">
+                <i class="fas fa-headphones"></i>
+                <h3>Audio Gear</h3>
+                <p>Immersive surround sound headsets and crystal-clear microphones for competitive gaming communication.</p>
             </div>
-            <div class="template-content">
-                <h2>Our Mission</h2>
-                <p>We're passionate about creating the ultimate gaming experience through innovative technology and superior design.</p>
-                <div class="coming-soon">
-                    <i class="fas fa-cog fa-spin"></i> Content Coming Soon
-                </div>
+            <div class="feature-card">
+                <i class="fas fa-desktop"></i>
+                <h3>Monitors</h3>
+                <p>Ultra-fast refresh rates and stunning 4K displays that bring your games to life with vivid detail.</p>
             </div>
-        </div>
-
-        <!-- Contact Page -->
-        <div id="contact" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-envelope"></i> Contact Us</h1>
-                <p>Get in touch with our gaming experts</p>
+            <div class="feature-card">
+                <i class="fas fa-chair"></i>
+                <h3>Gaming Chairs</h3>
+                <p>Ergonomic gaming chairs designed for comfort during those extended gaming marathons.</p>
             </div>
-            <div class="template-content">
-                <h2>Let's Connect</h2>
-                <p>Have questions about our products? Need technical support? We're here to help!</p>
-                <div class="coming-soon">
-                    <i class="fas fa-comments"></i> Contact Form Coming Soon
-                </div>
-            </div>
-        </div>
-
-        <!-- Account Page -->
-        <div id="account" class="page">
-            <div class="page-header">
-                <h1><i class="fas fa-user"></i> Welcome {{ request.user.username }}</h1>
-                <p>Manage your Wavelength gaming profile</p>
-            </div>
-            <div class="template-content">
-                <h2>Gaming Profile</h2>
-                <p>Track your orders, manage your wishlist, and customize your gaming preferences.</p>
-                <div class="coming-soon">
-                    <i class="fas fa-user-cog"></i> Account Dashboard Coming Soon
-                </div>
+            <div class="feature-card">
+                <i class="fas fa-microchip"></i>
+                <h3>PC Components</h3>
+                <p>High-performance graphics cards, processors, and cooling solutions to build your dream rig.</p>
             </div>
         </div>
     </div>
-
-    <!-- Cart Notification -->
-    <div id="cart-notification" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(45deg, #00d4ff, #ff0080); color: white; padding: 15px 20px; border-radius: 10px; display: none; z-index: 1001; box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);">
-        <i class="fas fa-check-circle"></i> <span id="notification-text">Item added to cart!</span>
-    </div>
-
-    <script src="{% static 'js/script.js' %}"></script>
-</body>
-</html>
+{% endblock %}
