@@ -12,7 +12,7 @@
       default: '3.11'
 
   variables:
-    PROJECT_DIR: 'Controllerhub-main/Controllerhub/ecommerce'   # folder that has manage.py
+    PROJECT_DIR: 'Controllerhub/ecommerce'   # folder that has manage.py
     REQS_FILE: 'Controllerhub/requirements.txt'                 # path to requirements.txt
 
 
