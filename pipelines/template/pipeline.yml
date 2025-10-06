@@ -77,11 +77,7 @@ stages:
 
       - script: |
           python -m pip install --upgrade pip
-          if [ -n "$(REQS_FILE)" ]; then
-            pip install -r "$(REQS_FILE)"
-          else
-            pip install django
-          fi
+          pip install -r "$(REQS_FILE)" || pip install django
           pip install unittest-xml-reporting coverage
         displayName: "Install Python dependencies + test tooling"
 
