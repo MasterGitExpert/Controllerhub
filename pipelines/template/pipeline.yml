@@ -102,6 +102,7 @@ stages:
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
+          searchFolder: '$(System.DefaultWorkingDirectory)'
           testRunTitle: 'Django Unit Tests'
           failTaskOnFailedTests: true
 
