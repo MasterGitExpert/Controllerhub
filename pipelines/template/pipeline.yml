@@ -45,25 +45,22 @@
     pool:
       vmImage: ubuntu-latest
     jobs:
-    - job: InstallPython
+    - job: RunTestsAndPublish
       steps:
         - task: UsePythonVersion@0
           inputs:
             versionSpec: ${{ parameters.PythonVersion }}
           displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: RunUnitTests
-      dependsOn: InstallPython
-      steps:
+
         - script: |
-            python -m pip install -r requirements.txt
+            python -m pip install --upgrade pip
             pip install -r "$(REQS_FILE)"
             pip install unittest-xml-reporting coverage
-          displayName: "Install Python Depenencies + test"
+          displayName: "Install Python Dependencies + test tooling"
+
         - script: |
             cd "$(PROJECT_DIR)"
-            # Run ONLY your app’s tests (optional filter):
-            # coverage run manage.py test storefront
-            # Or run everything Django discovers:
+            echo "Running Django tests under coverage in: $(PROJECT_DIR)"
             coverage run manage.py test \
               --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
               --no-input --verbosity=2 \
@@ -71,27 +68,30 @@
             coverage xml
             coverage html
           displayName: "Run Django tests + coverage"
+
         - task: PublishTestResults@2
           inputs:
             testResultsFormat: 'JUnit'
             testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
             testRunTitle: 'Django Unit Tests'
             failTaskOnFailedTests: true
+          displayName: "Publish JUnit results"
 
         - task: PublishCodeCoverageResults@2
           inputs:
             codeCoverageTool: 'Cobertura'
             summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
             reportDirectory: '$(PROJECT_DIR)/htmlcov'
+            failIfCoverageEmpty: true
+          displayName: "Publish coverage summary"
 
         - task: PublishBuildArtifacts@1
           inputs:
             PathtoPublish: '$(PROJECT_DIR)/htmlcov'
             ArtifactName: 'coverage-html'
-        - bash: |
-            echo "Running tests..."
-            python ecommerce/manage.py test storefront; true
-          displayName: "Run Unit Tests"
+            publishLocation: 'Container'
+          displayName: "Publish HTML coverage artifact"
+
   - stage: "DeploymentApprovalStage"
     dependsOn: UnitTestingStage
     pool: server
