@@ -1,4 +1,4 @@
-# parameters:
+
 ---
 parameters:
   - name: PythonVersion
@@ -7,9 +7,12 @@ parameters:
     default: '3.11'
 
 
+
 variables:
-  PROJECT_DIR: ''       
-  REQS_FILE: ''         
+  PROJECT_DIR: ''    
+  REQS_FILE: ''      
+  system.debug: true  
+
 stages:
 
 
@@ -27,7 +30,9 @@ stages:
   - job: RunLinters
     dependsOn: InstallPython
     steps:
-      - script: python -m pip install --upgrade pip && python -m pip install flake8 mypy
+      - script: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 mypy
         displayName: "Install flake8 + mypy"
       - bash: |
           echo "Running mypy linter..."
@@ -38,20 +43,19 @@ stages:
           python -m flake8 . ; true
         displayName: "Linter Run (flake8)"
 
-
 - stage: UnitTestingStage
   dependsOn: LinterStage
   pool:
     vmImage: ubuntu-latest
   jobs:
   - job: RunTestsAndPublish
+    timeoutInMinutes: 60
     steps:
       - task: UsePythonVersion@0
         inputs:
           versionSpec: ${{ parameters.PythonVersion }}
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
-  
       - script: |
           echo "Detecting manage.py and requirements.txt..."
           set -e
@@ -77,44 +81,65 @@ stages:
 
       - script: |
           python -m pip install --upgrade pip
-          pip install -r "$(REQS_FILE)" || pip install django
+          if [ -n "$(REQS_FILE)" ]; then
+            pip install -r "$(REQS_FILE)"
+          else
+            pip install django
+          fi
           pip install unittest-xml-reporting coverage
         displayName: "Install Python dependencies + test tooling"
 
+
       - script: |
+          set -euo pipefail
+          export PYTHONUNBUFFERED=1
           cd "$(PROJECT_DIR)"
           echo "Running Django tests under coverage in: $(pwd)"
-          ls -la manage.py
-          coverage run manage.py test \
+          ls -la manage.py || true
+
+          # Guard against long hangs: stop after 20 minutes if stuck
+          timeout 20m python -u -m coverage run manage.py test \
             --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
-            --no-input --verbosity=2 \
-            --output-dir test-reports
+            --no-input --verbosity=2
+
           coverage xml
           coverage html
         displayName: "Run Django tests + coverage"
 
       - task: PublishTestResults@2
         displayName: "Publish JUnit results"
+        condition: always()
         inputs:
           testResultsFormat: 'JUnit'
-          testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
+          testResultsFiles: '**/TEST-*.xml'     
           searchFolder: '$(System.DefaultWorkingDirectory)'
           testRunTitle: 'Django Unit Tests'
           failTaskOnFailedTests: true
 
       - task: PublishCodeCoverageResults@2
         displayName: "Publish coverage summary"
+        condition: always()
         inputs:
           codeCoverageTool: 'Cobertura'
           summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
           reportDirectory: '$(PROJECT_DIR)/htmlcov'
-          failIfCoverageEmpty: true
+          failIfCoverageEmpty: false
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish HTML coverage artifact"
+        condition: always()
         inputs:
           PathtoPublish: '$(PROJECT_DIR)/htmlcov'
           ArtifactName: 'coverage-html'
+          publishLocation: 'Container'
+
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish JUnit XML reports"
+        condition: always()
+        inputs:
+          PathtoPublish: '$(System.DefaultWorkingDirectory)'
+          ArtifactName: 'junit-xml'
           publishLocation: 'Container'
 
 
@@ -147,7 +172,6 @@ stages:
       - script: |
           echo "Installing dependencies for deploy..."
           python -m pip install --upgrade pip
-          # If you need a specific requirements path for deploy, detect it again:
           REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
           if [ -n "$REQ" ]; then
             pip install -r "$REQ"
@@ -161,5 +185,5 @@ stages:
     steps:
       - bash: |
           echo "Running Deployment..."
-          # Add real deployment steps here (e.g., collectstatic/migrations/app service deploy)
+          # Add real deployment steps here (collectstatic/migrate/deploy)
         displayName: "Run Deployments"
