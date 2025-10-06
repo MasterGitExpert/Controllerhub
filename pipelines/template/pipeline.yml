@@ -8,11 +8,6 @@ parameters:
 
 
 
-variables:
-  PROJECT_DIR: ''    
-  REQS_FILE: ''      
-  system.debug: true  
-
 stages:
 
 
@@ -43,6 +38,7 @@ stages:
           python -m flake8 . ; true
         displayName: "Linter Run (flake8)"
 
+
 - stage: UnitTestingStage
   dependsOn: LinterStage
   pool:
@@ -56,90 +52,63 @@ stages:
           versionSpec: ${{ parameters.PythonVersion }}
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
-      - script: |
-          echo "Detecting manage.py and requirements.txt..."
-          set -e
-          MANAGE=$(find . -name manage.py -print | head -n1)
-          if [ -z "$MANAGE" ]; then
-            echo "##vso[task.logissue type=error]manage.py not found in repo"
-            find . -maxdepth 3 -type d -print
-            exit 1
-          fi
-          PROJ_DIR=$(dirname "$MANAGE")
-          echo "Found manage.py at: $MANAGE"
-          echo "##vso[task.setvariable variable=PROJECT_DIR]$PROJ_DIR"
 
-          REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
-          if [ -z "$REQ" ]; then
-            echo "##vso[task.logissue type=warning]requirements.txt not found; will install django only"
-            echo "##vso[task.setvariable variable=REQS_FILE]"
-          else
-            echo "Found requirements.txt at: $REQ"
-            echo "##vso[task.setvariable variable=REQS_FILE]$REQ"
-          fi
-        displayName: "Detect project paths"
-
-      - script: |
+      - bash: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          if [ -n "$(REQS_FILE)" ]; then
-            pip install -r "$(REQS_FILE)"
+          if [ -f requirements.txt ]; then
+            echo "Installing from requirements.txt at repo root"
+            pip install -r requirements.txt
+          elif [ -f ecommerce/requirements.txt ]; then
+            echo "Installing from ecommerce/requirements.txt"
+            pip install -r ecommerce/requirements.txt
           else
+            echo "requirements.txt not found; installing minimal deps"
             pip install django
           fi
           pip install unittest-xml-reporting coverage
         displayName: "Install Python dependencies + test tooling"
 
-
-      - script: |
+ 
+      - bash: |
           set -euo pipefail
           export PYTHONUNBUFFERED=1
-          cd "$(PROJECT_DIR)"
-          echo "Running Django tests under coverage in: $(pwd)"
-          ls -la manage.py || true
-
-          # Guard against long hangs: stop after 20 minutes if stuck
+          echo "Running Django tests under coverage in ecommerce/"
+          ls -la ecommerce/manage.py || true
           timeout 20m python -u -m coverage run manage.py test \
             --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
             --no-input --verbosity=2
-
           coverage xml
           coverage html
+        workingDirectory: ecommerce
         displayName: "Run Django tests + coverage"
 
+
       - task: PublishTestResults@2
-        displayName: "Publish JUnit results"
         condition: always()
+        displayName: "Publish JUnit results"
         inputs:
           testResultsFormat: 'JUnit'
-          testResultsFiles: '**/TEST-*.xml'     
+          testResultsFiles: '**/TEST-*.xml'
           searchFolder: '$(System.DefaultWorkingDirectory)'
           testRunTitle: 'Django Unit Tests'
           failTaskOnFailedTests: true
 
       - task: PublishCodeCoverageResults@2
-        displayName: "Publish coverage summary"
         condition: always()
+        displayName: "Publish coverage summary"
         inputs:
           codeCoverageTool: 'Cobertura'
-          summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
-          reportDirectory: '$(PROJECT_DIR)/htmlcov'
+          summaryFileLocation: 'ecommerce/coverage.xml'
+          reportDirectory: 'ecommerce/htmlcov'
           failIfCoverageEmpty: false
 
       - task: PublishBuildArtifacts@1
+        condition: always()
         displayName: "Publish HTML coverage artifact"
-        condition: always()
         inputs:
-          PathtoPublish: '$(PROJECT_DIR)/htmlcov'
+          PathtoPublish: 'ecommerce/htmlcov'
           ArtifactName: 'coverage-html'
-          publishLocation: 'Container'
-
-
-      - task: PublishBuildArtifacts@1
-        displayName: "Publish JUnit XML reports"
-        condition: always()
-        inputs:
-          PathtoPublish: '$(System.DefaultWorkingDirectory)'
-          ArtifactName: 'junit-xml'
           publishLocation: 'Container'
 
 
@@ -169,12 +138,14 @@ stages:
   - job: InstallDependencies
     dependsOn: InstallPython
     steps:
-      - script: |
+      - bash: |
+          set -euo pipefail
           echo "Installing dependencies for deploy..."
           python -m pip install --upgrade pip
-          REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
-          if [ -n "$REQ" ]; then
-            pip install -r "$REQ"
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f ecommerce/requirements.txt ]; then
+            pip install -r ecommerce/requirements.txt
           else
             pip install django
           fi
