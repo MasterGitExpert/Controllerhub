@@ -9,7 +9,6 @@ from django.conf import settings
 
 from .models import Product, Customer, Order, OrderItem
 
-
 class StorefrontTests(TestCase):
     def setUp(self):
         # Two products: one regular, one on discount with limited stock
@@ -190,9 +189,9 @@ class StorefrontTests(TestCase):
         self.assertEqual(Customer.objects.filter(email="exists@example.com").count(), 1)
         self.assertEqual(Order.objects.count(), 1)
         self.assertEqual(OrderItem.objects.count(), 1)
-from .models import Product
 
-# Create your tests here.
+
+#  @MasterGitExpert - Model tests for Product methods
 
 
 class ModelTests(TestCase):
