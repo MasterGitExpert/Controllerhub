@@ -1,188 +1,168 @@
 # parameters:
 ---
-  parameters:
-    - name: PythonVersion
-      type: string 
-      values:
-        - '3.9'
-        - '3.10'
-        - '3.11'
-        - '3.12'
-        - '3.13'
-      default: '3.11'
-
-  variables:
-    PROJECT_DIR: 'ControllerHub/ecommerce'   # folder that has manage.py
-    REQS_FILE: 'ControllerHub/requirements.txt'                 # path to requirements.txt
+parameters:
+  - name: PythonVersion
+    type: string
+    values: ['3.9','3.10','3.11','3.12','3.13']
+    default: '3.11'
 
 
-  stages:
-  - stage: "LinterStage"
-    pool:
-      vmImage: ubuntu-latest
-    jobs:
-    - job: InstallPython
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: RunLinters
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install flake8
-          displayName: "Install flake8"
-        - script: |
-            python -m pip install mypy
-          displayName: "Install mypy"
-        - bash: |
-            echo "Running mypy linter..."
-            python -m mypy . ; true
-          displayName: "Linter Run (mypy)"
-        - bash: |
-            echo "Running flake8 linter..."
-            python -m flake8 . ; true
-          displayName: "Linter Run (flake8)"
-  - stage: "UnitTestingStage"
-    dependsOn: LinterStage
-    pool:
-      vmImage: ubuntu-latest
-    jobs:
-    - job: RunTestsAndPublish
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-
-       # 1) Detect paths (sets variables PROJECT_DIR and REQS_FILE for later steps)
-        - script: |
-            echo "Detecting manage.py and requirements.txt..."
-            set -e
-            MANAGE=$(find . -name manage.py -print | head -n1)
-            if [ -z "$MANAGE" ]; then
-              echo "##vso[task.logissue type=error]manage.py not found in repo"
-              find . -maxdepth 3 -type d -print
-              exit 1
-            fi
-            PROJ_DIR=$(dirname "$MANAGE")
-            echo "Found manage.py at: $MANAGE"
-            echo "##vso[task.setvariable variable=PROJECT_DIR]$PROJ_DIR"
-
-            REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
-            if [ -z "$REQ" ]; then
-              echo "##vso[task.logissue type=warning]requirements.txt not found; will install django only"
-              echo "##vso[task.setvariable variable=REQS_FILE]"
-            else
-              echo "Found requirements.txt at: $REQ"
-              echo "##vso[task.setvariable variable=REQS_FILE]$REQ"
-            fi
-          displayName: "Detect project paths"
-
-        # 2) Install deps
-        - script: |
-            python -m pip install --upgrade pip
-            if [ -n "$(REQS_FILE)" ]; then
-              pip install -r "$(REQS_FILE)"
-            else
-              pip install django
-            fi
-            pip install unittest-xml-reporting coverage
-          displayName: "Install Python deps + test tooling"
-
-        # 3) Run tests with coverage from the detected folder
-        - script: |
-            cd "$(PROJECT_DIR)"
-            echo "Running Django tests under coverage in: $(pwd)"
-            ls -la manage.py
-            coverage run manage.py test \
-              --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
-              --no-input --verbosity=2 \
-              --output-dir test-reports
-            coverage xml
-            coverage html
-          displayName: "Run Django tests + coverage"
-
-        # 4) Publish results (use the detected path)
-        - task: PublishTestResults@2
-          displayName: "Publish JUnit results"
-          inputs:
-            testResultsFormat: 'JUnit'
-            testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
-            testRunTitle: 'Django Unit Tests'
-            failTaskOnFailedTests: true
-
-    - task: PublishCodeCoverageResults@2
-      displayName: "Publish coverage summary"
-      inputs:
-        codeCoverageTool: 'Cobertura'
-        summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
-        reportDirectory: '$(PROJECT_DIR)/htmlcov'
-        failIfCoverageEmpty: true
-
-    - task: PublishBuildArtifacts@1
-      displayName: "Publish HTML coverage artifact"
-      inputs:
-        PathtoPublish: '$(PROJECT_DIR)/htmlcov'
-        ArtifactName: 'coverage-html'
-        publishLocation: 'Container'
+variables:
+  PROJECT_DIR: ''       
+  REQS_FILE: ''         
+stages:
 
 
-        - task: PublishTestResults@2
-          inputs:
-            testResultsFormat: 'JUnit'
-            testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
-            testRunTitle: 'Django Unit Tests'
-            failTaskOnFailedTests: true
-          displayName: "Publish JUnit results"
+- stage: LinterStage
+  pool:
+    vmImage: ubuntu-latest
+  jobs:
+  - job: InstallPython
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
-        - task: PublishCodeCoverageResults@2
-          inputs:
-            codeCoverageTool: 'Cobertura'
-            summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
-            reportDirectory: '$(PROJECT_DIR)/htmlcov'
-            failIfCoverageEmpty: true
-          displayName: "Publish coverage summary"
+  - job: RunLinters
+    dependsOn: InstallPython
+    steps:
+      - script: python -m pip install --upgrade pip && python -m pip install flake8 mypy
+        displayName: "Install flake8 + mypy"
+      - bash: |
+          echo "Running mypy linter..."
+          python -m mypy . ; true
+        displayName: "Linter Run (mypy)"
+      - bash: |
+          echo "Running flake8 linter..."
+          python -m flake8 . ; true
+        displayName: "Linter Run (flake8)"
 
-        - task: PublishBuildArtifacts@1
-          inputs:
-            PathtoPublish: '$(PROJECT_DIR)/htmlcov'
-            ArtifactName: 'coverage-html'
-            publishLocation: 'Container'
-          displayName: "Publish HTML coverage artifact"
 
-  - stage: "DeploymentApprovalStage"
-    dependsOn: UnitTestingStage
-    pool: server
-    jobs:
-    - job: DeploymentApprovalJob
-      steps:
-        - task: ManualValidation@1
-          inputs:
-            instructions: 'Please approve the deployment.'
-            timeoutInMinutes: 5
-  - stage: "DeploymentStage"
-    dependsOn: DeploymentApprovalStage
-    pool:
-      vmImage: ubuntu-latest
-    jobs:
-    - job: InstallPython
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: InstallDependencies
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install -r requirements.txt
-          displayName: "Install Python Depenencies"
-    - job: RunDeployment
-      dependsOn: InstallDependencies
-      steps:
-        - bash: |
-            echo "Running Deployment..."
-            # python test.py
-          displayName: "Run Deployments"
+- stage: UnitTestingStage
+  dependsOn: LinterStage
+  pool:
+    vmImage: ubuntu-latest
+  jobs:
+  - job: RunTestsAndPublish
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
+
+  
+      - script: |
+          echo "Detecting manage.py and requirements.txt..."
+          set -e
+          MANAGE=$(find . -name manage.py -print | head -n1)
+          if [ -z "$MANAGE" ]; then
+            echo "##vso[task.logissue type=error]manage.py not found in repo"
+            find . -maxdepth 3 -type d -print
+            exit 1
+          fi
+          PROJ_DIR=$(dirname "$MANAGE")
+          echo "Found manage.py at: $MANAGE"
+          echo "##vso[task.setvariable variable=PROJECT_DIR]$PROJ_DIR"
+
+          REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
+          if [ -z "$REQ" ]; then
+            echo "##vso[task.logissue type=warning]requirements.txt not found; will install django only"
+            echo "##vso[task.setvariable variable=REQS_FILE]"
+          else
+            echo "Found requirements.txt at: $REQ"
+            echo "##vso[task.setvariable variable=REQS_FILE]$REQ"
+          fi
+        displayName: "Detect project paths"
+
+      - script: |
+          python -m pip install --upgrade pip
+          if [ -n "$(REQS_FILE)" ]; then
+            pip install -r "$(REQS_FILE)"
+          else
+            pip install django
+          fi
+          pip install unittest-xml-reporting coverage
+        displayName: "Install Python dependencies + test tooling"
+
+      - script: |
+          cd "$(PROJECT_DIR)"
+          echo "Running Django tests under coverage in: $(pwd)"
+          ls -la manage.py
+          coverage run manage.py test \
+            --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
+            --no-input --verbosity=2 \
+            --output-dir test-reports
+          coverage xml
+          coverage html
+        displayName: "Run Django tests + coverage"
+
+      - task: PublishTestResults@2
+        displayName: "Publish JUnit results"
+        inputs:
+          testResultsFormat: 'JUnit'
+          testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
+          testRunTitle: 'Django Unit Tests'
+          failTaskOnFailedTests: true
+
+      - task: PublishCodeCoverageResults@2
+        displayName: "Publish coverage summary"
+        inputs:
+          codeCoverageTool: 'Cobertura'
+          summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
+          reportDirectory: '$(PROJECT_DIR)/htmlcov'
+          failIfCoverageEmpty: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish HTML coverage artifact"
+        inputs:
+          PathtoPublish: '$(PROJECT_DIR)/htmlcov'
+          ArtifactName: 'coverage-html'
+          publishLocation: 'Container'
+
+
+- stage: DeploymentApprovalStage
+  dependsOn: UnitTestingStage
+  pool: server
+  jobs:
+  - job: DeploymentApprovalJob
+    steps:
+      - task: ManualValidation@1
+        inputs:
+          instructions: 'Please approve the deployment.'
+          timeoutInMinutes: 5
+
+- stage: DeploymentStage
+  dependsOn: DeploymentApprovalStage
+  pool:
+    vmImage: ubuntu-latest
+  jobs:
+  - job: InstallPython
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
+
+  - job: InstallDependencies
+    dependsOn: InstallPython
+    steps:
+      - script: |
+          echo "Installing dependencies for deploy..."
+          python -m pip install --upgrade pip
+          # If you need a specific requirements path for deploy, detect it again:
+          REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
+          if [ -n "$REQ" ]; then
+            pip install -r "$REQ"
+          else
+            pip install django
+          fi
+        displayName: "Install Python Dependencies (deploy)"
+
+  - job: RunDeployment
+    dependsOn: InstallDependencies
+    steps:
+      - bash: |
+          echo "Running Deployment..."
+          # Add real deployment steps here (e.g., collectstatic/migrations/app service deploy)
+        displayName: "Run Deployments"
