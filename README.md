@@ -122,9 +122,16 @@ C:.
 
 ## Task Distribution
 
-- Products Feature @MasterGitExpert
-- Product Feature @MasterGitExpert
-- @MasterGitExpert Products Tests From line 194
-
+- Home Feature @martymash
+- Product Catalogue Feature @MasterGitExpert
+- Individual Product Feature @MasterGitExpert
+  - @MasterGitExpert Products Tests From line 194
+- About Feature @martymash
+- Contact Feature @martymash
+- Login/ Account Feature @ayden8383
+- Cart Feature @scaraliyose
+- Checkout Feature @scaraliyose
+- Review Management Feature @ayden8383
+- Admin Feature @MasterGitExpert
 
 
