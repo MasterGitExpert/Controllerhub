@@ -56,7 +56,38 @@
       steps:
         - script: |
             python -m pip install -r requirements.txt
-          displayName: "Install Python Depenencies"
+            pip install -r "$(REQS_FILE)"
+            pip install unittest-xml-reporting coverage
+          displayName: "Install Python Depenencies + test"
+        - script: |
+            cd "$(PROJECT_DIR)"
+            # Run ONLY your app’s tests (optional filter):
+            # coverage run manage.py test storefront
+            # Or run everything Django discovers:
+            coverage run manage.py test \
+              --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
+              --no-input --verbosity=2 \
+              --output-dir test-reports
+            coverage xml
+            coverage html
+          displayName: "Run Django tests + coverage"
+        - task: PublishTestResults@2
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
+            testRunTitle: 'Django Unit Tests'
+            failTaskOnFailedTests: true
+
+        - task: PublishCodeCoverageResults@2
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
+            reportDirectory: '$(PROJECT_DIR)/htmlcov'
+
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(PROJECT_DIR)/htmlcov'
+            ArtifactName: 'coverage-html'
         - bash: |
             echo "Running tests..."
             python ecommerce/manage.py test storefront; true
