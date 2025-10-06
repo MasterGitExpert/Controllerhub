@@ -56,15 +56,46 @@
             versionSpec: ${{ parameters.PythonVersion }}
           displayName: 'Use Python ${{ parameters.PythonVersion }}'
 
+       # 1) Detect paths (sets variables PROJECT_DIR and REQS_FILE for later steps)
+        - script: |
+            echo "Detecting manage.py and requirements.txt..."
+            set -e
+            MANAGE=$(find . -name manage.py -print | head -n1)
+            if [ -z "$MANAGE" ]; then
+              echo "##vso[task.logissue type=error]manage.py not found in repo"
+              find . -maxdepth 3 -type d -print
+              exit 1
+            fi
+            PROJ_DIR=$(dirname "$MANAGE")
+            echo "Found manage.py at: $MANAGE"
+            echo "##vso[task.setvariable variable=PROJECT_DIR]$PROJ_DIR"
+
+            REQ=$(find . -maxdepth 3 -name requirements.txt -print | head -n1)
+            if [ -z "$REQ" ]; then
+              echo "##vso[task.logissue type=warning]requirements.txt not found; will install django only"
+              echo "##vso[task.setvariable variable=REQS_FILE]"
+            else
+              echo "Found requirements.txt at: $REQ"
+              echo "##vso[task.setvariable variable=REQS_FILE]$REQ"
+            fi
+          displayName: "Detect project paths"
+
+        # 2) Install deps
         - script: |
             python -m pip install --upgrade pip
-            pip install -r "$(REQS_FILE)"
+            if [ -n "$(REQS_FILE)" ]; then
+              pip install -r "$(REQS_FILE)"
+            else
+              pip install django
+            fi
             pip install unittest-xml-reporting coverage
-          displayName: "Install Python Dependencies + test tooling"
+          displayName: "Install Python deps + test tooling"
 
+        # 3) Run tests with coverage from the detected folder
         - script: |
             cd "$(PROJECT_DIR)"
-            echo "Running Django tests under coverage in: $(PROJECT_DIR)"
+            echo "Running Django tests under coverage in: $(pwd)"
+            ls -la manage.py
             coverage run manage.py test \
               --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner \
               --no-input --verbosity=2 \
@@ -72,6 +103,31 @@
             coverage xml
             coverage html
           displayName: "Run Django tests + coverage"
+
+        # 4) Publish results (use the detected path)
+        - task: PublishTestResults@2
+          displayName: "Publish JUnit results"
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '$(PROJECT_DIR)/test-reports/*.xml'
+            testRunTitle: 'Django Unit Tests'
+            failTaskOnFailedTests: true
+
+    - task: PublishCodeCoverageResults@2
+      displayName: "Publish coverage summary"
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(PROJECT_DIR)/coverage.xml'
+        reportDirectory: '$(PROJECT_DIR)/htmlcov'
+        failIfCoverageEmpty: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: "Publish HTML coverage artifact"
+      inputs:
+        PathtoPublish: '$(PROJECT_DIR)/htmlcov'
+        ArtifactName: 'coverage-html'
+        publishLocation: 'Container'
+
 
         - task: PublishTestResults@2
           inputs:
