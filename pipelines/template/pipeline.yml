@@ -83,7 +83,7 @@
             versionSpec: ${{ parameters.PythonVersion }}
           displayName: 'Use Python ${{ parameters.PythonVersion }}'
     - job: RunDeployment
-      dependsOn: InstallDependencies
+      dependsOn: InstallPython
       steps:
         - script: |
             python -m pip install -r requirements.txt
