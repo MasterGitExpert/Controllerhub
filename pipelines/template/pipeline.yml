@@ -82,15 +82,12 @@
           inputs:
             versionSpec: ${{ parameters.PythonVersion }}
           displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: InstallDependencies
+    - job: RunDeployment
       dependsOn: InstallPython
       steps:
         - script: |
             python -m pip install -r requirements.txt
           displayName: "Install Python Depenencies"
-    - job: RunDeployment
-      dependsOn: InstallDependencies
-      steps:
         - bash: |
             echo "Running Deployment..."
             # python test.py
