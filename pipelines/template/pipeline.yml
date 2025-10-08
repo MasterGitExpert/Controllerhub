@@ -91,5 +91,4 @@
         - bash: |
             echo "Running Deployment..."
             # python test.py
-            python ecommerce/manage.py runserver; true
           displayName: "Run Deployments"
