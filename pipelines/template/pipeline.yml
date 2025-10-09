@@ -11,11 +11,17 @@
         - '3.13'
       default: '3.11'
 
+  variables:
+    azureServiceConnectionId: '33067f47-ff52-4cf9-ac1c-a513c17d7ca8'
+    vmImageName: 'ubuntu-latest'
+    environmentName: 'appserviceconnection'
+    projectRoot: $(System.DefaultWorkingDirectory)
 
   stages:
   - stage: "LinterStage"
+    displayName: "Linter Stage"
     pool:
-      vmImage: ubuntu-latest
+      vmImage: $(vmImageName)
     jobs:
     - job: InstallPython
       steps:
@@ -40,10 +46,12 @@
             echo "Running flake8 linter..."
             python -m flake8 . ; true
           displayName: "Linter Run (flake8)"
+
   - stage: "UnitTestingStage"
+    displayName: "Unit Testing Stage"
     dependsOn: LinterStage
     pool:
-      vmImage: ubuntu-latest
+      vmImage: $(vmImageName)
     jobs:
     - job: InstallPython
       steps:
@@ -61,7 +69,9 @@
             echo "Running tests..."
             python ecommerce/manage.py test storefront; true
           displayName: "Run Unit Tests"
+
   - stage: "DeploymentApprovalStage"
+    displayName: "Deployment Approval Stage"
     dependsOn: UnitTestingStage
     pool: server
     jobs:
@@ -71,24 +81,59 @@
           inputs:
             instructions: 'Please approve the deployment.'
             timeoutInMinutes: 5
-  - stage: "DeploymentStage"
+
+  - stage: "BuildStage"
+    displayName: "Build stage"
     dependsOn: DeploymentApprovalStage
-    pool:
-      vmImage: ubuntu-latest
     jobs:
-    - job: InstallPython
+    - job: BuildJob
+      pool:
+        vmImage: $(vmImageName)
       steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: RunDeployment
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install -r requirements.txt
-          displayName: "Install Python Depenencies"
-        - bash: |
-            echo "Running Deployment..."
-            # python test.py
-          displayName: "Run Deployments"
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
+      - script: |
+          python -m venv antenv
+          source antenv/bin/activate
+          python -m pip install --upgrade pip
+          pip install setuptools
+          pip install -r requirements.txt
+        workingDirectory: $(projectRoot)
+        displayName: "Install requirements"
+      - task: ArchiveFiles@2
+        displayName: 'Archive files (Create Artifact)'
+        inputs:
+          rootFolderOrFile: '$(projectRoot)'
+          includeRootFolder: false
+          archiveType: zip
+          archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+          replaceExistingArchive: true
+      - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        displayName: 'Upload Artifact'
+        artifact: drop
+
+  - stage: DeployStage
+    displayName: "Deploy Stage"
+    dependsOn: BuildStage
+    condition: succeeded()
+    jobs:
+    - deployment: DeploymentJob
+      pool:
+        vmImage: $(vmImageName)
+      environment: $(environmentName)
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: UsePythonVersion@0
+              inputs:
+                versionSpec: ${{ parameters.PythonVersion }}
+              displayName: 'Use Python ${{ parameters.PythonVersion }}'
+            - task: AzureWebApp@1
+              displayName: 'Deploy Azure Web App : $(environmentName)'
+              inputs:
+                azureSubscription: $(azureServiceConnectionId)
+                appName: $(environmentName)
+                package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
