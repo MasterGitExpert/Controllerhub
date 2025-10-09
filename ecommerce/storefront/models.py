@@ -1,4 +1,5 @@
 """Django data models for the ecommerce storefront application."""
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 import datetime
 
@@ -73,6 +74,8 @@ class Product(models.Model):
         - range
         - discount
         - sale_price
+        - average_rating
+        - reviews_count
     """
     name = models.CharField(max_length=128)
     tagline = models.CharField(max_length=64, default="", blank=True)
@@ -94,6 +97,8 @@ class Product(models.Model):
     # Sale information for discounted items
     discount = models.BooleanField(default=False)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+    average_rating = models.FloatField(default=0.0)
+    reviews_count = models.PositiveIntegerField(default=0)
 
     def is_in_stock(self) -> bool:
         """ Returns True if the product is in stock. """
@@ -154,3 +159,25 @@ class OrderItem(models.Model):
     def __str__(self) -> str:
         return f"Order Item {self.order.order_id}: {self.product.name} x " \
             f"{self.quantity} = ${self.product.price * self.quantity}"
+
+
+class Review(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
+    customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, blank=True)
+    author_name = models.CharField(max_length=64, blank=True)
+    author_email = models.EmailField(max_length=128, blank=True)
+
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    title = models.CharField(max_length=100)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+    def __str__(self):
+        who = self.customer and f"{self.customer.first_name} {self.customer.last_name}" or self.author_name or "Anonymous"
+        return f"{self.product.name} review by {who} ({self.rating}/5)"
