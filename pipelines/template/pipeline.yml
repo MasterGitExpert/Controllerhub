@@ -14,7 +14,7 @@
   variables:
     azureServiceConnectionId: '33067f47-ff52-4cf9-ac1c-a513c17d7ca8'
     vmImageName: 'ubuntu-latest'
-    environmentName: 'appserviceconnection'
+    webAppName: 'appserviceconnection'
     projectRoot: $(System.DefaultWorkingDirectory)
 
   stages:
@@ -119,21 +119,19 @@
     dependsOn: BuildStage
     condition: succeeded()
     jobs:
-    - deployment: DeploymentJob
+    - job: DeploymentJob
       pool:
         vmImage: $(vmImageName)
-      environment: $(environmentName)
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - task: UsePythonVersion@0
-              inputs:
-                versionSpec: ${{ parameters.PythonVersion }}
-              displayName: 'Use Python ${{ parameters.PythonVersion }}'
-            - task: AzureWebApp@1
-              displayName: 'Deploy Azure Web App : $(environmentName)'
-              inputs:
-                azureSubscription: $(azureServiceConnectionId)
-                appName: $(environmentName)
-                package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+      steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: ${{ parameters.PythonVersion }}
+        displayName: 'Use Python ${{ parameters.PythonVersion }}'
+      - task: AzureWebApp@1
+        displayName: 'Deploy Azure Web App : $(webAppName)'
+        inputs:
+          azureSubscription: $(azureServiceConnectionId)
+          appName: $(webAppName)
+          package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+          startUpCommand: 'python manage.py runserver'
+
