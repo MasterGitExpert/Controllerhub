@@ -132,6 +132,6 @@
         inputs:
           azureSubscription: $(azureServiceConnectionId)
           appName: $(webAppName)
-          package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+          package: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
           startUpCommand: 'python manage.py runserver'
 
