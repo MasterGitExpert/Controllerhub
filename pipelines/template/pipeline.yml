@@ -127,11 +127,17 @@
         inputs:
           versionSpec: ${{ parameters.PythonVersion }}
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
+      - script: |
+          ls -la .
+          ls -la $(Pipeline.Workspace)
+          ls -la $(Pipeline.Workspace)/drop
+          echo "$(Build.BuildId).zip"
+          ls -la $(Build.ArtifactStagingDirectory)
       - task: AzureWebApp@1
         displayName: 'Deploy Azure Web App : $(webAppName)'
         inputs:
           azureSubscription: $(azureServiceConnectionId)
           appName: $(webAppName)
-          package: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+          package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
           startUpCommand: 'python manage.py runserver'
 
