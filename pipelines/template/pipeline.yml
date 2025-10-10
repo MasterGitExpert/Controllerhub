@@ -12,9 +12,9 @@
       default: '3.11'
 
   variables:
-    azureServiceConnectionId: '33067f47-ff52-4cf9-ac1c-a513c17d7ca8'
+    azureServiceConnectionId: 'appserviceconnection'
     vmImageName: 'ubuntu-latest'
-    webAppName: 'appserviceconnection'
+    webAppName: 'wavelengthcontrollerhub'
     projectRoot: $(System.DefaultWorkingDirectory)
 
   stages:
