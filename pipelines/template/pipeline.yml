@@ -128,10 +128,15 @@
           versionSpec: ${{ parameters.PythonVersion }}
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
       - script: |
+          pwd
+          echo "ls -la ."
           ls -la .
+          echo "ls -la $(Pipeline.Workspace)"
           ls -la $(Pipeline.Workspace)
+          echo "ls -la $(Pipeline.Workspace)/drop"
           ls -la $(Pipeline.Workspace)/drop
-          echo "$(Build.BuildId).zip"
+          echo "Build ID: $(Build.BuildId).zip"
+          echo "ls -la $(Build.ArtifactStagingDirectory)"
           ls -la $(Build.ArtifactStagingDirectory)
       - task: AzureWebApp@1
         displayName: 'Deploy Azure Web App : $(webAppName)'
