@@ -113,6 +113,10 @@
       - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         displayName: 'Upload Artifact'
         artifact: drop
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+          artifactName: drop
       - script: |
           pwd
           echo "ls -la ."
