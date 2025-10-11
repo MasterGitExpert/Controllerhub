@@ -127,6 +127,16 @@
           echo "Build ID: $(Build.BuildId).zip"
           echo "ls -la $(Build.ArtifactStagingDirectory)"
           ls -la $(Build.ArtifactStagingDirectory)
+      - task: AzureCLI@2
+        inputs:
+          azureSubscription: 'appserviceconnection'
+          scriptType: 'ps'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az webapp list
+            az webapp list --query "[?name=='$(webAppName)']"
+            az webapp show --name $(webAppName) --resource-group Maingroup
+          powerShellErrorActionPreference: 'silentlyContinue'
 
   - stage: DeployStage
     displayName: "Deploy Stage"
@@ -162,11 +172,13 @@
       #     package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
       #     startUpCommand: 'python manage.py runserver'
       - task: AzureWebApp@1
-        displayName: 'Deploy Azure Web App : $(webAppName)'
         inputs:
           azureSubscription: $(azureServiceConnection)
           appType: 'webAppLinux'
           appName: $(webAppName)
+          deployToSlotOrASE: true
+          resourceGroupName: 'Maingroup'
+          slotName: 'production'
           package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
           runtimeStack: 'PYTHON|3.13'
           startUpCommand: 'python manage.py runserver'
