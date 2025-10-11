@@ -113,6 +113,17 @@
       - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         displayName: 'Upload Artifact'
         artifact: drop
+      - script: |
+          pwd
+          echo "ls -la ."
+          ls -la .
+          echo "ls -la Pipeline.Workspace $(Pipeline.Workspace)"
+          ls -la $(Pipeline.Workspace)
+          echo "ls -la $(Pipeline.Workspace)/drop"
+          ls -la $(Pipeline.Workspace)/drop
+          echo "Build ID: $(Build.BuildId).zip"
+          echo "ls -la $(Build.ArtifactStagingDirectory)"
+          ls -la $(Build.ArtifactStagingDirectory)
 
   - stage: DeployStage
     displayName: "Deploy Stage"
@@ -131,7 +142,7 @@
           pwd
           echo "ls -la ."
           ls -la .
-          echo "ls -la $(Pipeline.Workspace)"
+          echo "ls -la Pipeline.Workspace $(Pipeline.Workspace)"
           ls -la $(Pipeline.Workspace)
           echo "ls -la $(Pipeline.Workspace)/drop"
           ls -la $(Pipeline.Workspace)/drop
