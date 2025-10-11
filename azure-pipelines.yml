@@ -9,6 +9,9 @@ trigger: none
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  webAppName: 'wavelengthcontrollerhub'
+
 steps:
   - task: AzureCLI@2
     inputs:
@@ -16,5 +19,13 @@ steps:
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        az webapp log tail --resource-group Maingroup
+        az webapp show --name $(webAppName) --resource-group Maingroup
+      powerShellErrorActionPreference: 'silentlyContinue'
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'appserviceconnection'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az webapp log tail --name $(webAppName) --resource-group Maingroup
       powerShellErrorActionPreference: 'silentlyContinue'
