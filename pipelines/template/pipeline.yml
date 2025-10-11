@@ -84,7 +84,7 @@
 
   - stage: "BuildStage"
     displayName: "Build stage"
-    dependsOn: DeploymentApprovalStage
+    # dependsOn: DeploymentApprovalStage
     jobs:
     - job: BuildJob
       pool:
