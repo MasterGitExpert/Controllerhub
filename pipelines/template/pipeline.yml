@@ -63,11 +63,13 @@
   #     dependsOn: InstallPython
   #     steps:
   #       - script: |
-  #           python -m pip install -r requirements.txt
+  #             python -m pip install -r requirements.txt
+  #           workingDirectory: $(projectRoot)
   #         displayName: "Install Python Depenencies"
   #       - bash: |
   #           echo "Running tests..."
   #           python ecommerce/manage.py test storefront; true
+  #         workingDirectory: $(projectRoot)
   #         displayName: "Run Unit Tests"
 
   # - stage: "DeploymentApprovalStage"
@@ -95,18 +97,15 @@
           versionSpec: ${{ parameters.PythonVersion }}
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
       - script: |
-          pwd
-          ls -la .
           python -m venv antenv
           source antenv/bin/activate
           python -m pip install --upgrade pip
           pip install setuptools
           pip install -r requirements.txt
-        workingDirectory: $(projectRoot)
         displayName: "Install requirements"
       - script: |
-          python manage.py makemigrations
-          python manage.py migrate
+          python ecommerce/manage.py makemigrations
+          python ecommerce/manage.py migrate
         workingDirectory: $(projectRoot)
         displayName: "Run Database Migrations"
       - task: ArchiveFiles@2
