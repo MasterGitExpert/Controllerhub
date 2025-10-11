@@ -95,6 +95,8 @@
           versionSpec: ${{ parameters.PythonVersion }}
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
       - script: |
+          pwd
+          ls -la .
           python -m venv antenv
           source antenv/bin/activate
           python -m pip install --upgrade pip
