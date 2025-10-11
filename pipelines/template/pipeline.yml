@@ -154,13 +154,13 @@
           echo "Build ID: $(Build.BuildId).zip"
           echo "ls -la $(Build.ArtifactStagingDirectory)"
           ls -la $(Build.ArtifactStagingDirectory)
-      - task: AzureWebApp@1
-        displayName: 'Deploy Azure Web App : $(webAppName)'
-        inputs:
-          azureSubscription: $(azureServiceConnection)
-          appName: $(webAppName)
-          package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-          startUpCommand: 'python manage.py runserver'
+      # - task: AzureWebApp@1
+      #   displayName: 'Deploy Azure Web App : $(webAppName)'
+      #   inputs:
+      #     azureSubscription: $(azureServiceConnection)
+      #     appName: $(webAppName)
+      #     package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+      #     startUpCommand: 'python manage.py runserver'
       - task: AzureWebApp@1
         displayName: 'Deploy Azure Web App : $(webAppName)'
         inputs:
