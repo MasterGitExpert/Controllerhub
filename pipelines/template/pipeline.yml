@@ -102,12 +102,9 @@
           python -m pip install --upgrade pip
           pip install setuptools
           pip install -r requirements.txt
-        displayName: "Install requirements"
-      - script: |
           python ecommerce/manage.py makemigrations
           python ecommerce/manage.py migrate
-        workingDirectory: $(projectRoot)
-        displayName: "Run Database Migrations"
+        displayName: "Install requirements"
       - task: ArchiveFiles@2
         inputs:
           rootFolderOrFile: '$(projectRoot)'
