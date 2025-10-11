@@ -16,5 +16,5 @@ steps:
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        az webapp log tail
+        az webapp log tail --resource-group Maingroup
       powerShellErrorActionPreference: 'silentlyContinue'
