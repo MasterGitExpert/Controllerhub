@@ -102,20 +102,22 @@
           pip install -r requirements.txt
         workingDirectory: $(projectRoot)
         displayName: "Install requirements"
+      - script: |
+          python manage.py makemigrations
+          python manage.py migrate
+        workingDirectory: $(projectRoot)
+        displayName: "Run Database Migrations"
       - task: ArchiveFiles@2
-        displayName: 'Archive files (Create Artifact)'
         inputs:
           rootFolderOrFile: '$(projectRoot)'
           includeRootFolder: false
           archiveType: zip
           archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
           replaceExistingArchive: true
-      # - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-      #   displayName: 'Upload Artifact'
-      #   artifact: drop
+        displayName: 'Archive files (Create Artifact)'
       - publish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-        displayName: 'Publish Artifact'
         artifact: drop
+        displayName: 'Publish Artifact'
       - script: |
           pwd
           echo "ls -la ."
@@ -127,16 +129,21 @@
           echo "Build ID: $(Build.BuildId).zip"
           echo "ls -la $(Build.ArtifactStagingDirectory)"
           ls -la $(Build.ArtifactStagingDirectory)
+        workingDirectory: $(projectRoot)
+        displayName: "List files"
       - task: AzureCLI@2
         inputs:
           azureSubscription: 'appserviceconnection'
-          scriptType: 'ps'
+          scriptType: 'pscore'
           scriptLocation: 'inlineScript'
           inlineScript: |
+            az --version
+            az account show
             az webapp list
             az webapp list --query "[?name=='$(webAppName)']"
             az webapp show --name $(webAppName) --resource-group Maingroup
-          powerShellErrorActionPreference: 'silentlyContinue'
+          powerShellErrorActionPreference: 'continue'
+        displayName: 'Test Azure CLI Connection'
 
   - stage: DeployStage
     displayName: "Deploy Stage"
@@ -153,6 +160,7 @@
         displayName: 'Use Python ${{ parameters.PythonVersion }}'
       - download: current
         artifact: drop
+        displayName: 'Download Artifact'
       - script: |
           pwd
           echo "ls -la ."
@@ -164,6 +172,8 @@
           echo "Build ID: $(Build.BuildId).zip"
           echo "ls -la $(Build.ArtifactStagingDirectory)"
           ls -la $(Build.ArtifactStagingDirectory)
+        workingDirectory: $(projectRoot)
+        displayName: "List files"
       # - task: AzureWebApp@1
       #   displayName: 'Deploy Azure Web App : $(webAppName)'
       #   inputs:
@@ -182,4 +192,5 @@
           package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
           runtimeStack: 'PYTHON|3.13'
           startUpCommand: 'python manage.py runserver'
+        displayName: 'Deploy Azure Web App'
 
