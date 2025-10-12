@@ -67,9 +67,8 @@ def product(request, pk):
     product = Product.objects.get(id=pk)
     review_count = Review.objects.filter(product=product).count()
     if review_count >= 1:
-        review_per_star = {i: [Review.objects.filter(product=product, rating=i).count(), 
-                               f"{round((Review.objects.filter(product=product, 
-                                                               rating=i).count()/review_count)*100)}%"] for i in range(5, 0, -1)}
+        review_per_star = {i: [Review.objects.filter(product=product, rating=i).count(
+        ), f"{round((Review.objects.filter(product=product, rating=i).count()/review_count)*100)}%"] for i in range(5, 0, -1)}
         avg_rating = round(Review.objects.filter(
             product=product).aggregate(models.Avg('rating'))['rating__avg'], 1)
         stars = []
