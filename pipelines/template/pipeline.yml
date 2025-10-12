@@ -11,10 +11,10 @@ parameters:
   default: '3.13'
 
 variables:
-- azureServiceConnection: 'appserviceconnection'
-- vmImageName: 'ubuntu-latest'
-- webAppName: 'wavelengthcontrollerhub'
-- projectRoot: $(System.DefaultWorkingDirectory)
+  azureServiceConnection: 'appserviceconnection'
+  vmImageName: 'ubuntu-latest'
+  webAppName: 'wavelengthcontrollerhub'
+  projectRoot: $(System.DefaultWorkingDirectory)
 
 stages:
 - stage: "LinterStage"
