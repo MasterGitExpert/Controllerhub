@@ -21,6 +21,7 @@ steps:
       inlineScript: |
         az webapp show --name $(webAppName) --resource-group Maingroup
       powerShellErrorActionPreference: 'silentlyContinue'
+    displayName: 'WebApp Details'
   - task: AzureCLI@2
     inputs:
       azureSubscription: 'appserviceconnection'
@@ -29,3 +30,13 @@ steps:
       inlineScript: |
         az webapp log deployment show --name $(webAppName) --resource-group Maingroup
       powerShellErrorActionPreference: 'silentlyContinue'
+    displayName: 'WebApp Last Log'
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'appserviceconnection'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az webapp log deployment show --name $(webAppName) --resource-group Maingroup
+      powerShellErrorActionPreference: 'silentlyContinue'
+    displayName: 'WepApp Log History'
