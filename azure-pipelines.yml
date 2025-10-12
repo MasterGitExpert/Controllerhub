@@ -37,6 +37,6 @@ steps:
       scriptType: 'pscore'
       scriptLocation: 'inlineScript'
       inlineScript: |
-        az deployment group-logs list --name $(webAppName) --resource-group Maingroup
+        az webapp log deployment list --name $(webAppName) --resource-group Maingroup
       powerShellErrorActionPreference: 'silentlyContinue'
     displayName: 'WepApp Log History'
