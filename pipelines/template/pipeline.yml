@@ -22,139 +22,139 @@ stages:
   pool:
     vmImage: $(vmImageName)
   jobs:
-    - job: InstallPython
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: RunLinters
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install flake8
-          displayName: "Install flake8"
-        - script: |
-            python -m pip install mypy
-          displayName: "Install mypy"
-        - bash: |
-            echo "Running mypy linter..."
-            python -m mypy . ; true
-          displayName: "Linter Run (mypy)"
-        - bash: |
-            echo "Running flake8 linter..."
-            python -m flake8 . ; true
-          displayName: "Linter Run (flake8)"
+  - job: RunLinters
+    displayName: "Run Linter On Codebase"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m pip install flake8
+      displayName: "Install flake8"
+    - script: |
+        python -m pip install mypy
+      displayName: "Install mypy"
+    - bash: |
+        echo "Running mypy linter..."
+        python -m mypy . ; true
+      displayName: "Linter Run (mypy)"
+    - bash: |
+        echo "Running flake8 linter..."
+        python -m flake8 . ; true
+      displayName: "Linter Run (flake8)"
 - stage: "UnitTestingStage"
   displayName: "Unit Testing Stage"
   dependsOn: LinterStage
   pool:
     vmImage: $(vmImageName)
   jobs:
-    - job: InstallPython
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: RunUnitTests
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install -r requirements.txt
-          workingDirectory: $(projectRoot)
-          displayName: "Install Python Depenencies"
-        - bash: |
-            echo "Running tests..."
-            python ecommerce/manage.py test storefront; true
-          workingDirectory: $(projectRoot)
-          displayName: "Run Unit Tests"
+  - job: RunUnitTests
+    displayName: "Run Unit Tests"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m pip install -r requirements.txt
+      workingDirectory: $(projectRoot)
+      displayName: "Install Python Depenencies"
+    - bash: |
+        echo "Running tests..."
+        python ecommerce/manage.py test storefront; true
+      workingDirectory: $(projectRoot)
+      displayName: "Run Unit Tests"
 - stage: "DeploymentApprovalStage"
   displayName: "Deployment Approval Stage"
   dependsOn: UnitTestingStage
   pool: server
   jobs:
-    - job: DeploymentApprovalJob
-      steps:
-        - task: ManualValidation@1
-          inputs:
-            instructions: 'Please approve the deployment.'
-            timeoutInMinutes: 5
+  - job: DeploymentApprovalJob
+    displayName: "Manual Approval for Deployment"
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        instructions: 'Please approve the deployment.'
+        timeoutInMinutes: 2
 - stage: "BuildStage"
   displayName: "Build Stage"
   dependsOn: DeploymentApprovalStage
   jobs:
-    - job: BuildJob
-      pool:
-        vmImage: $(vmImageName)
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-        - script: |
-            python -m venv antenv
-            source antenv/bin/activate
-            python -m pip install --upgrade pip
-            pip install setuptools
-            pip install -r requirements.txt
-          displayName: "Install requirements"
-        - script: |
-            source antenv/bin/activate
-            python ecommerce/manage.py makemigrations
-            python ecommerce/manage.py migrate
-          displayName: "Run Database Migrations"
-        - task: ArchiveFiles@2
-          inputs:
-            rootFolderOrFile: '$(projectRoot)'
-            includeRootFolder: false
-            archiveType: zip
-            archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-            replaceExistingArchive: true
-          displayName: 'Archive files (Create Artifact)'
-        - publish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-          artifact: drop
-          displayName: 'Publish Artifact'
+  - job: BuildJob
+    displayName: "Build Django Web Application"
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m venv antenv
+        source antenv/bin/activate
+        python -m pip install --upgrade pip
+        pip install setuptools
+        pip install -r requirements.txt
+      displayName: "Install requirements"
+    - script: |
+        source antenv/bin/activate
+        python ecommerce/manage.py makemigrations
+        python ecommerce/manage.py migrate
+      displayName: "Run Database Migrations"
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(projectRoot)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+      displayName: 'Archive files (Create Artifact)'
+    - publish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      artifact: drop
+      displayName: 'Publish Artifact'
 - stage: DeployStage
   displayName: "Deploy Stage"
   dependsOn: BuildStage
   condition: succeeded()
   jobs:
-    - job: DeploymentJob
-      pool:
-        vmImage: $(vmImageName)
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-        - download: current
-          artifact: drop
-          displayName: 'Download Artifact'
-        - task: AzureWebApp@1
-          inputs:
-            azureSubscription: $(azureServiceConnection)
-            appType: 'webAppLinux'
-            appName: $(webAppName)
-            deployToSlotOrASE: true
-            resourceGroupName: 'Maingroup'
-            slotName: 'production'
-            package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
-            runtimeStack: 'PYTHON|3.13'
-            startUpCommand: 'python manage.py runserver'
-          displayName: 'Deploy Azure Web App'
-    - job: ReviewJob
-      pool:
-        vmImage: $(vmImageName)
-      dependsOn: DeploymentJob
-      condition: succeededOrFailed()
-      steps:
-        - task: AzureCLI@2
-          inputs:
-            azureSubscription: 'appserviceconnection'
-            scriptType: 'pscore'
-            scriptLocation: 'inlineScript'
-            inlineScript: |
-              az webapp log deployment show --name $(webAppName) --resource-group Maingroup
-            powerShellErrorActionPreference: 'silentlyContinue'
-          displayName: 'Show Deployment Logs (AzureCLIV2)'
+  - job: DeploymentJob
+    displayName: "Deploy Web App"
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - download: current
+      artifact: drop
+      displayName: 'Download Artifact'
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        appType: 'webAppLinux'
+        appName: $(webAppName)
+        deployToSlotOrASE: true
+        resourceGroupName: 'Maingroup'
+        slotName: 'production'
+        package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+        runtimeStack: 'PYTHON|3.13'
+        startUpCommand: 'python manage.py runserver'
+      displayName: 'Deploy Azure Web App'
+  - job: ReviewJob
+    displayName: "Review Deployment Logs"
+    dependsOn: DeploymentJob
+    condition: succeededOrFailed()
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'appserviceconnection'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az webapp log deployment show --name $(webAppName) --resource-group Maingroup
+        powerShellErrorActionPreference: 'silentlyContinue'
+      displayName: 'Show Deployment Logs (AzureCLIV2)'
