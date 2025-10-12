@@ -74,8 +74,6 @@ class Product(models.Model):
         - range
         - discount
         - sale_price
-        - average_rating
-        - reviews_count
     """
     name = models.CharField(max_length=128)
     tagline = models.CharField(max_length=64, default="", blank=True)
@@ -97,8 +95,7 @@ class Product(models.Model):
     # Sale information for discounted items
     discount = models.BooleanField(default=False)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2)
-    average_rating = models.FloatField(default=0.0)
-    reviews_count = models.PositiveIntegerField(default=0)
+
 
     def is_in_stock(self) -> bool:
         """ Returns True if the product is in stock. """
@@ -162,22 +159,52 @@ class OrderItem(models.Model):
 
 
 class Review(models.Model):
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='reviews')
-    customer = models.ForeignKey('Customer', on_delete=models.SET_NULL, null=True, blank=True)
-    author_name = models.CharField(max_length=64, blank=True)
-    author_email = models.EmailField(max_length=128, blank=True)
-
+    """
+        Review table to store product reviews by customers
+        - product
+        - customer
+        - rating
+        - title
+        - body
+        - created_at
+    """
+    product = models.ForeignKey(
+        'Product', on_delete=models.CASCADE, related_name='reviews')
+    customer = models.ForeignKey(
+        'Customer', on_delete=models.SET_NULL, null=True, blank=True)
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     title = models.CharField(max_length=100)
-    body = models.TextField()
+    body = models.TextField(max_length=2000, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
 
 
+    def get_reviewer_name(self):
+        if self.customer:
+            return f"{self.customer.first_name} {self.customer.last_name}"
+        return "Anonymous"
+
+
+    def star_list(self):
+        stars = []
+        counter = round(self.rating * 2) / 2 
+        for _ in range(5):
+            if counter - 1 >= 0:
+                stars.append("fas fa-star")
+                counter -= 1
+            elif counter - 0.5 == 0:
+                stars.append("fas fa-star-half-alt")
+            else:
+                stars.append("far fa-star")
+        return stars
+
+
     def __str__(self):
-        who = self.customer and f"{self.customer.first_name} {self.customer.last_name}" or self.author_name or "Anonymous"
-        return f"{self.product.name} review by {who} ({self.rating}/5)"
+        who = self.get_reviewer_name()
+        return f"{who} reviewed {self.product.name} at {self.rating}/5 - " 
+            #    f"AVG: {self.get_overall_product_review()} " \
+            #    f"Total: {self.total_product_reviews()} reviews"
