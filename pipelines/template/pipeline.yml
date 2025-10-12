@@ -151,3 +151,4 @@ stages:
             inlineScript: |
               az webapp log deployment show --name $(webAppName) --resource-group Maingroup
             powerShellErrorActionPreference: 'silentlyContinue'
+          displayName: 'Show Deployment Logs (AzureCLIV2)'
