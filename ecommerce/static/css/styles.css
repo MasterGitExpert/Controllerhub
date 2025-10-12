@@ -453,7 +453,7 @@ nav ul li a.active {
 }
 
 .product-detail-buttons {
-    display: flex;
+   display: flex;
    position: absolute; 
    bottom: 20px; 
    width: 90%;
@@ -469,8 +469,48 @@ nav ul li a.active {
     margin-top: 30px;
 }
 
+.product-bottom-container > details > summary {
+    margin: -20px;
+    padding: 20px;
+    border-radius: 20px;    
+    outline: none;
+}
+
+.product-bottom-container > details:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
 .product-bottom-container > details > summary:hover {
     cursor: pointer;
+}
+
+.progress-bar {
+    margin-top: 5px;
+    border-radius: 10px;
+    width: 80%;
+    height: 20px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.progress-bar-highlight {
+    height: 100%;
+    background-color: goldenrod;
+    padding-right: 5px;
+}
+
+.review-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.star {
+    color: goldenrod;
+}
+
+.overall-review-child {
+    display: grid; 
+    grid-template-columns: 1fr 2fr;
 }
 
 /* Page Headers */

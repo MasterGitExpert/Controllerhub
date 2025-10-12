@@ -78,6 +78,79 @@
                     <br>
                     <p class="raw-data">{{ product.specifications }}</p>
                 </details>
+                <br>
+                <!-- Retractable Product Specifications -->
+                <details class="glass-effect">
+                    <summary> &ensp;Reviews</summary>
+                    <br>
+                    {% if review_count >= 1%}
+                        <div class="review-summary">
+                            <div class="review-overview">
+                                <h3>Review Overview</h3>
+                                <br>
+                                {% for star, review_count in review_per_star.items %}
+                                    {% if review_count.0 > 0 %}
+                                        <p display: flex; align-items: center;>
+                                            {{star}} Stars ({{ review_count.0 }}) 
+                                            <div class="progress-bar">
+                                                <div class="progress-bar-highlight" style="width: {{ review_count.1 }};"></div>
+                                            </div> 
+                                        </p>
+                                    {% else %}
+                                        <p display: flex; align-items: center;>
+                                            {{star}} Stars 
+                                            <div class="progress-bar">
+                                            </div> 
+                                        </p>
+                                    {% endif %}
+                                    <br>
+                                {% endfor%}
+                            </div>
+                            <div class="overall-review">
+                                <h3>Overall Review</h3>
+                                <br>
+                                <div class="overall-review-child">
+                                    <p style="font-size: 3rem; font-weight: 600;">
+                                        {{ overall_review.0 }}
+                                    </p>
+                                    <div style="padding-top: 15px;">
+                                        {% for star in overall_review.1 %}
+                                            <h2 class="{{ star }} star"></h2>
+                                        {% endfor %}
+                                        {% if review_count <= 1 %}
+                                            <p style="padding: 5px;">{{ review_count }} Review</p>                      
+                                        {% else %}
+                                            <p style="padding: 5px;">{{ review_count }} Reviews</p>                      
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <!-- <hr> -->
+                        <div class="review-list">
+                            <h3>All Reviews</h3>
+                            <br>
+                            {% for review in reviews %}
+                                <div class="glass-effect">
+                                    <h3>{{ review.title }}</h3>
+                                    <br>
+                                    <div style="display: flex; align-items: center;">
+                                        {% for star in review.star_list %}
+                                            <i class="{{ star }} star"></i>
+                                        {% endfor %}
+                                        <p style="margin-left: 10px; color: rgba(255, 255, 255, 0.9);"><small>by {{ review.get_reviewer_name }} on {{ review.created_at|date:"M. d, Y" }}</small></p>
+                                    </div>
+                                    <p class="raw-data">{{ review.body }}</p>
+                                </div>
+                                <br>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="font-size: large; text-align: center; width: 100%;">No reviews yet. Be the first to review this product!</p>
+                    {% endif %}
+                </details>
             </div>
         </div>
         <div style="padding-bottom: 5%;"></div>
