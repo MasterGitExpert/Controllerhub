@@ -143,6 +143,12 @@ stages:
             runtimeStack: 'PYTHON|3.13'
             startUpCommand: 'python manage.py runserver'
           displayName: 'Deploy Azure Web App'
+    - job: ReviewJob
+      pool:
+        vmImage: $(vmImageName)
+      dependsOn: DeploymentJob
+      condition: succeededOrFailed()
+      steps:
         - task: AzureCLI@2
           inputs:
             azureSubscription: 'appserviceconnection'
