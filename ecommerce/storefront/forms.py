@@ -1,5 +1,7 @@
 from django import forms
 from .models import Review
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 STAR_CHOICES = [
     (5, "5 – Excellent"),
@@ -50,3 +52,10 @@ class ReviewForm(forms.ModelForm):
         if val < 1 or val > 5:
             raise forms.ValidationError("Rating must be between 1 and 5 stars.")
         return val
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")

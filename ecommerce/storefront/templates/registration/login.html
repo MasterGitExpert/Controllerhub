@@ -14,7 +14,7 @@
 
     <form method="post" novalidate>
       {% csrf_token %}
-   
+
       <div class="form-row">
         <label for="{{ form.username.id_for_label }}">Username</label>
         {{ form.username }}
@@ -41,9 +41,10 @@
       </div>
     </form>
 
-    <div style="margin-top: 12px; opacity:.85;">
+    <div class="auth-alt" style="margin-top: 12px; opacity:.95;">
       <small>
-        <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
+
+        <a class="link" href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Create an account</a>
       </small>
     </div>
   </div>

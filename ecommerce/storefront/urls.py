@@ -1,7 +1,8 @@
-from django.urls import path
+from django.urls import path, include
 from django.http import HttpResponse
 from django.urls import get_resolver
 from . import views
+from .views import SignUpView
 
 def _routes(_request):
     names = sorted(k for k in get_resolver().reverse_dict.keys() if isinstance(k, str))
@@ -22,6 +23,9 @@ urlpatterns = [
     path("cart/clear/", views.clear_cart, name="clear_cart"),
     path("checkout/", views.checkout, name="checkout"),
     path("checkout/success/<int:order_id>/", views.checkoutsuccess, name="checkoutsuccess"),
+
+    path("accounts/signup/", SignUpView.as_view(), name="signup"),
+    path("accounts/", include("django.contrib.auth.urls")),
 
     path("_routes/", _routes, name="_routes"),
 ]

@@ -6,7 +6,10 @@ from django.db import models
 from .forms import ReviewForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
+from django.urls import reverse_lazy
+from django.views.generic import FormView
+from django.contrib.auth import login, authenticate
+from .forms import SignUpForm
 
 # Create your views here.
 
@@ -252,3 +255,16 @@ def add_review(request, product_id):
         form = ReviewForm()
 
     return render(request, "reviews/add_review.html", {"form": form, "product": product})
+
+class SignUpView(FormView):
+    template_name = "registration/signup.html"
+    form_class = SignUpForm
+    success_url = reverse_lazy("home") 
+
+    def form_valid(self, form):
+        user = form.save()
+        raw_password = form.cleaned_data.get("password1")
+        user = authenticate(self.request, username=user.username, password=raw_password)
+        if user is not None:
+            login(self.request, user)  
+        return super().form_valid(form)
