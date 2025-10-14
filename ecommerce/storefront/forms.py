@@ -36,7 +36,7 @@ class ReviewForm(forms.ModelForm):
 
     class Meta:
         model = Review
-        # Adjust these names if your model uses different field names (e.g. 'text' instead of 'body')
+
         fields = ["title", "rating", "body"]
 
     def clean_body(self):
@@ -46,7 +46,6 @@ class ReviewForm(forms.ModelForm):
         return text
 
     def clean_rating(self):
-        # ensure rating is 1..5 as int
         val = int(self.cleaned_data["rating"])
         if val < 1 or val > 5:
             raise forms.ValidationError("Rating must be between 1 and 5 stars.")

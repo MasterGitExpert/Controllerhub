@@ -2,6 +2,8 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 import datetime
+from django.conf import settings
+
 
 # Create your models here.
 
@@ -170,6 +172,11 @@ class Review(models.Model):
     """
     product = models.ForeignKey(
         'Product', on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,        # <-- use the string ref
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='reviews')
     customer = models.ForeignKey(
         'Customer', on_delete=models.SET_NULL, null=True, blank=True)
     rating = models.PositiveSmallIntegerField(
@@ -184,10 +191,15 @@ class Review(models.Model):
 
 
     def get_reviewer_name(self):
+        if self.user:
+            full = (self.user.get_full_name() or "").strip()
+            return full or self.user.get_username()
         if self.customer:
-            return f"{self.customer.first_name} {self.customer.last_name}"
+            first = (self.customer.first_name or "").strip()
+            last = (self.customer.last_name or "").strip()
+            name = f"{first} {last}".strip()
+            return name or (self.customer.email or "Anonymous")
         return "Anonymous"
-
 
     def star_list(self):
         stars = []
