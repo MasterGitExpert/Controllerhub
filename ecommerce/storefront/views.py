@@ -1,10 +1,12 @@
-import re
+from django.shortcuts import redirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from .models import Product, Customer, Order, OrderItem, Review
 from django.db import models
+from .forms import ReviewForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
 
 # Create your views here.
 
@@ -230,3 +232,22 @@ def checkout(request):
 def checkoutsuccess(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     return render(request, "checkoutsuccess.html", {"order": order})
+
+def add_review(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            messages.success(request, "Thanks! Your review has been submitted.")
+            return redirect(f"/product/{product.id}#reviews")
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = ReviewForm()
+
+    return render(request, "reviews/add_review.html", {"form": form, "product": product})
