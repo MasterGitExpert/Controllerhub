@@ -241,12 +241,13 @@ def add_review(request, product_id):
         if form.is_valid():
             review = form.save(commit=False)
             review.product = product
-            review.user = request.user
+            if request.user.is_authenticated:
+                review.user = request.user   # only set when real user
+            # else leave review.user = None
             review.save()
             messages.success(request, "Thanks! Your review has been submitted.")
             return redirect(f"/product/{product.id}#reviews")
-        else:
-            messages.error(request, "Please fix the errors below.")
+        messages.error(request, "Please fix the errors below.")
     else:
         form = ReviewForm()
 

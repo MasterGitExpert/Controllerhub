@@ -173,7 +173,7 @@ class Review(models.Model):
     product = models.ForeignKey(
         'Product', on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,        # <-- use the string ref
+        settings.AUTH_USER_MODEL,       
         null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='reviews')
