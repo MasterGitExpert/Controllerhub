@@ -1,71 +1,52 @@
 {% extends "base.html" %}
 
+{% block body_class %}auth-page{% endblock %}
+
 {% block content %}
-     <style>
-    /* Light tweaks so the form fits your theme */
-    .auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-    .auth-card { width: 100%; max-width: 480px; background: rgba(255,255,255,0.04);
-                 border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
-                 padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
-    .auth-card h1 { margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
-    .auth-card p.sub { margin-top: 0; opacity: .8; }
-    .form-row { margin: 14px 0; display: flex; flex-direction: column; gap: 6px; }
-    .form-row label { font-weight: 600; }
-    .form-row input { padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18);
-                      background: rgba(255,255,255,0.06); color: inherit; }
-    .actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
-    .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px;
-                   border: 1px solid rgba(0,212,255,0.5); background: linear-gradient(135deg, rgba(0,212,255,.15), rgba(0, 116, 217,.15));
-                   text-decoration: none; cursor: pointer; }
-    .btn-primary:hover { filter: brightness(1.1); }
-    .link { text-decoration: none; opacity: .9; }
-    .errorlist, .form-errors { color: #ff6b6b; margin: 8px 0 0; list-style: none; padding: 0; }
-    .navbar { margin-bottom: 28px; } /* reuse your navbar spacing */
-  </style>
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h1><i class="fas fa-sign-in-alt"></i> Log in</h1>
+    <p class="sub">Welcome back! Enter your details to continue.</p>
 
-    <!-- Centered auth card -->
-    <div class="auth-wrapper">
-      <div class="auth-card">
-        <h1><i class="fas fa-sign-in-alt"></i> Log in</h1>
-        <p class="sub">Welcome back! Enter your details to continue.</p>
+    {% if form.errors %}
+      <div class="form-errors">Your username and password didn’t match. Please try again.</div>
+    {% endif %}
 
-        {% if form.errors %}
-          <div class="form-errors">Your username and password didn’t match. Please try again.</div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="form-row">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <ul class="errorlist"><li>{{ form.username.errors.0 }}</li></ul>
         {% endif %}
-
-        <form method="post" novalidate>
-          {% csrf_token %}
-          <!-- Render fields manually so we can style them -->
-          <div class="form-row">
-            <label for="{{ form.username.id_for_label }}">Username</label>
-            {{ form.username }}
-            {% if form.username.errors %}<ul class="errorlist"><li>{{ form.username.errors.0 }}</li></ul>{% endif %}
-          </div>
-
-          <div class="form-row">
-            <label for="{{ form.password.id_for_label }}">Password</label>
-            {{ form.password }}
-            {% if form.password.errors %}<ul class="errorlist"><li>{{ form.password.errors.0 }}</li></ul>{% endif %}
-          </div>
-
-          <!-- Where to go after login -->
-          <input type="hidden" name="next" value="{{ next|default:'/' }}">
-
-          <div class="actions">
-            <button type="submit" class="btn-primary">
-              <i class="fas fa-unlock"></i> Log in
-            </button>
-            <a class="link" href="/"><i class="fas fa-arrow-left"></i> Back to Home</a>
-          </div>
-        </form>
-
-        <!-- Optional links (work if email backend / password views configured) -->
-        <div style="margin-top: 12px; opacity:.85;">
-          <small>
-            <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
-          </small>
-        </div>
       </div>
+
+      <div class="form-row">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <ul class="errorlist"><li>{{ form.password.errors.0 }}</li></ul>
+        {% endif %}
+      </div>
+
+      <input type="hidden" name="next" value="{{ next|default:'/' }}">
+
+      <div class="actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-unlock"></i> Log in
+        </button>
+        <a class="link" href="/"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      </div>
+    </form>
+
+    <div class="auth-alt" style="margin-top: 12px; opacity:.95;">
+      <small>
+
+        <a class="link" href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Create an account</a>
+      </small>
     </div>
+  </div>
+</div>
 {% endblock %}
- 
