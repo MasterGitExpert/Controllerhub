@@ -140,7 +140,7 @@ stages:
         slotName: 'production'
         package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
         runtimeStack: 'PYTHON|3.13'
-        startUpCommand: 'python manage.py runserver'
+        startUpCommand: 'python ecommerce/manage.py runserver'
       displayName: 'Deploy Azure Web App'
   - job: ReviewJob
     displayName: "Review Deployment Logs"
