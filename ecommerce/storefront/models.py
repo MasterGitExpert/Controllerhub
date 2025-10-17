@@ -1,7 +1,9 @@
 """Django data models for the ecommerce storefront application."""
-from tabnanny import verbose
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 import datetime
+from django.conf import settings
+
 
 # Create your models here.
 
@@ -27,7 +29,7 @@ class Customer(models.Model):
 
 class ProductCategory(models.Model):
     """
-        ProductCategory table to store product category information like 
+        ProductCategory table to store product category information like
         chairs, keyboards, mouse etc.
 
         - name
@@ -62,15 +64,26 @@ class Product(models.Model):
     """
         Product table to store product information
         - name
+        - tagline
+        - overview
         - description
+        - specifications
         - price
         - stock
         - image
         - display_item
+        - category
+        - range
+        - discount
+        - sale_price
     """
     name = models.CharField(max_length=128)
     tagline = models.CharField(max_length=64, default="", blank=True)
-    description = models.CharField(max_length=256, default="No description")
+    overview = models.TextField(
+        max_length=512, default="One of the finest product.")
+    description = models.TextField(max_length=2048, default="No description")
+    specifications = models.TextField(
+        max_length=2048, default="No specifications")
     price = models.DecimalField(max_digits=8, decimal_places=2, default=5.00)
     stock = models.PositiveIntegerField(default=0)
     image = models.ImageField(
@@ -83,8 +96,24 @@ class Product(models.Model):
         ProductRange, on_delete=models.CASCADE, null=True)
     # Sale information for discounted items
     discount = models.BooleanField(default=False)
-    sale_price = models.DecimalField(
-        max_digits=8, decimal_places=2, default=3.98)
+    sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+
+
+    def is_in_stock(self) -> bool:
+        """ Returns True if the product is in stock. """
+        return self.stock > 0
+
+    def check_stock(self) -> None:
+        """ Updates tagline if stock is 0 to 'Out of Stock'. """
+        if not self.is_in_stock():
+            self.tagline = "Out of Stock"
+            self.save()
+
+    def update_sale_price(self) -> None:
+        """ Sets sale price to price if the product is not discounted. """
+        if not self.discount:
+            self.sale_price = self.price
+        self.save()
 
     def __str__(self) -> str:
         if self.discount:
@@ -93,7 +122,7 @@ class Product(models.Model):
             price = f"{striked_price} -> ${self.sale_price}"
         else:
             price = f"${self.price}"
-        return f"{self.name} - {self.stock} @ {price} " \
+        return f"{self.name} - {self.stock} @ {price} (${self.sale_price})" \
             f"[{self.category}, {self.range}]"
 
 
@@ -111,7 +140,8 @@ class Order(models.Model):
     status = models.CharField(max_length=32, default="In Transit")
 
     def __str__(self) -> str:
-        return f"Order {self.order_id} by {self.customer.first_name} {self.customer.last_name} - {self.status}"
+        return f"Order {self.order_id} by {self.customer.first_name} " \
+            f"{self.customer.last_name} - {self.status}"
 
 
 class OrderItem(models.Model):
@@ -126,7 +156,70 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self) -> str:
-        return f"Order Item {self.order.order_id}: {self.product.name} x {self.quantity} = ${self.product.price * self.quantity}"
+        return f"Order Item {self.order.order_id}: {self.product.name} x " \
+            f"{self.quantity} = ${self.product.price * self.quantity}"
+
+
+class Review(models.Model):
+    """
+        Review table to store product reviews by customers
+        - product
+        - customer
+        - rating
+        - title
+        - body
+        - created_at
+    """
+    product = models.ForeignKey(
+        'Product', on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,       
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='reviews')
+    customer = models.ForeignKey(
+        'Customer', on_delete=models.SET_NULL, null=True, blank=True)
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    title = models.CharField(max_length=100)
+    body = models.TextField(max_length=2000, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+    def get_reviewer_name(self):
+        if self.user:
+            full = (self.user.get_full_name() or "").strip()
+            return full or self.user.get_username()
+        if self.customer:
+            first = (self.customer.first_name or "").strip()
+            last = (self.customer.last_name or "").strip()
+            name = f"{first} {last}".strip()
+            return name or (self.customer.email or "Anonymous")
+        return "Anonymous"
+
+    def star_list(self):
+        stars = []
+        counter = round(self.rating * 2) / 2 
+        for _ in range(5):
+            if counter - 1 >= 0:
+                stars.append("fas fa-star")
+                counter -= 1
+            elif counter - 0.5 == 0:
+                stars.append("fas fa-star-half-alt")
+            else:
+                stars.append("far fa-star")
+        return stars
+
+
+    def __str__(self):
+        who = self.get_reviewer_name()
+        return f"{who} reviewed {self.product.name} at {self.rating}/5 - " 
+            #    f"AVG: {self.get_overall_product_review()} " \
+            #    f"Total: {self.total_product_reviews()} reviews"
 
 
 class ContactMessage(models.Model):

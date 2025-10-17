@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+  <h1><i class="fas fa-check-circle"></i> Order Placed</h1>
+  <p>Thanks! Your order has been received.</p>
+</div>
+
+<div class="success-wrap">
+  <div class="success-icon"><i class="fas fa-check"></i></div>
+
+  <div class="panel success-card">
+    <div class="success-grid">
+      <div>
+        <div class="muted">Order ID</div>
+        <div class="value">#{{ order.id }}</div>
+      </div>
+      <div>
+        <div class="muted">Status</div>
+        <div class="value">{{ order.status }}</div>
+      </div>
+      <div class="success-grid--full">
+        <div class="muted">Ship To</div>
+        <div class="value">{{ order.address }}</div>
+      </div>
+    </div>
+
+    <div class="summary-actions" style="margin-top:16px;">
+      <a class="btn btn-primary" href="{% url 'products' %}">
+        Continue Shopping
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h1><i class="fas fa-sign-in-alt"></i> Log in</h1>
+    <p class="sub">Welcome back! Enter your details to continue.</p>
+
+    {% if form.errors %}
+      <div class="form-errors">Your username and password didn’t match. Please try again.</div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="form-row">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <ul class="errorlist"><li>{{ form.username.errors.0 }}</li></ul>
+        {% endif %}
+      </div>
+
+      <div class="form-row">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <ul class="errorlist"><li>{{ form.password.errors.0 }}</li></ul>
+        {% endif %}
+      </div>
+
+      <input type="hidden" name="next" value="{{ next|default:'/' }}">
+
+      <div class="actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-unlock"></i> Log in
+        </button>
+        <a class="link" href="/"><i class="fas fa-arrow-left"></i> Back to Home</a>
+      </div>
+    </form>
+
+    <div class="auth-alt" style="margin-top: 12px; opacity:.95;">
+      <small>
+
+        <a class="link" href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Create an account</a>
+      </small>
+    </div>
+  </div>
+</div>
+{% endblock %}

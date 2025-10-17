@@ -1,0 +1,159 @@
+<!-- This page contains the unique components of the individual product page (made by Krish) -->
+
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Product Detail Page -->
+    <div>
+        <div class="page-header" style="text-align: left;">
+            <!-- Shows product path "product / category / product name"  -->
+            <p style="margin: 0;"><i>
+                <a href="{% url 'products'%}" class="product-path">Products</a> / 
+                <a href="" class="product-path">{{ product.category }}</a> / 
+                <a href="{% url 'product' product.id %}" class="product-path">{{ product.name }}</a>
+                </i>
+            </p>
+            <br>
+            <!-- Header -->
+            <h1>{{ product.name }}</h1>
+            <!-- Product ID and Stock Info-->
+            <p style="margin: -10px 0px 0px 0px; color: rgb(186, 186, 186);"><small>Item Details: {{ product.id }}&emsp;{{ product.stock }}</small></p>
+        </div>
+        <div class="glass-effect">
+            <div class="product-detail-container">
+                <!-- Large product image on LHS -->
+                <div class="product-left-container">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="500px" style="margin-left: 30px;">
+                    {% else %}
+                        <div class="product-no-image" style="background: none; text-align: center;">
+                            <p style="font-size: large; color: #676767; width: 100%; ">{{ product.name }} <br> (Image Coming Soon)</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- Product price, CTA and overview on RHS -->
+                <div class="product-right-container">
+                    <div class="taglist">
+                        {% if product.tagline %}
+                            <h3 class="tagline">{{ product.tagline }}</h3>
+                        {% endif %}
+                        {% if product.discount %}
+                            <h3 class="tagline">On Sale!!!</h3>
+                        {% endif %}
+                    </div>
+                    <div class="glass-effect">
+                        {% if product.discount %}
+                            <h2 class="product-price"><span class="dc-price">${{ product.price }}</span>
+                                &emsp;${{ product.sale_price }}
+                            </h2>
+                        {% else %}
+                                    <h2>${{ product.price }}</h2>
+                                    <br>
+                        {% endif %}
+                        <p style="font-weight: bold;">Overview</p>
+                        <p class="raw-data">{{ product.overview }}</p>
+
+                        <div class="product-detail-buttons">
+                            <a href="#" class="cta-button">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </a>
+                           <a href="{% url 'add_review' product.id %}" class="product-path" style="margin-bottom: 0; font-size: 1.1rem;">
+                                <i class="fa fa-comments"></i> Add Review
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="product-bottom-container">
+                <!-- Retractable Product description -->
+                <details class="glass-effect">
+                    <summary> &ensp;Description</summary>
+                    <br>
+                    <p class="raw-data">{{ product.description }}</p>
+                </details>
+                <br>
+                <!-- Retractable Product Specifications -->
+                <details class="glass-effect">
+                    <summary> &ensp;Specifications</summary>
+                    <br>
+                    <p class="raw-data">{{ product.specifications }}</p>
+                </details>
+                <br>
+                <!-- Retractable Product Specifications -->
+                <details class="glass-effect">
+                    <summary> &ensp;Reviews</summary>
+                    <br>
+                    {% if review_count >= 1%}
+                        <div class="review-summary">
+                            <div class="review-overview">
+                                <h3>Review Overview</h3>
+                                <br>
+                                {% for star, review_count in review_per_star.items %}
+                                    {% if review_count.0 > 0 %}
+                                        <p display: flex; align-items: center;>
+                                            {{star}} Stars ({{ review_count.0 }}) 
+                                            <div class="progress-bar">
+                                                <div class="progress-bar-highlight" style="width: {{ review_count.1 }};"></div>
+                                            </div> 
+                                        </p>
+                                    {% else %}
+                                        <p display: flex; align-items: center;>
+                                            {{star}} Stars 
+                                            <div class="progress-bar">
+                                            </div> 
+                                        </p>
+                                    {% endif %}
+                                    <br>
+                                {% endfor%}
+                            </div>
+                            <div class="overall-review">
+                                <h3>Overall Review</h3>
+                                <br>
+                                <div class="overall-review-child">
+                                    <p style="font-size: 3rem; font-weight: 600;">
+                                        {{ overall_review.0 }}
+                                    </p>
+                                    <div style="padding-top: 15px;">
+                                        {% for star in overall_review.1 %}
+                                            <h2 class="{{ star }} star"></h2>
+                                        {% endfor %}
+                                        {% if review_count <= 1 %}
+                                            <p style="padding: 5px;">{{ review_count }} Review</p>                      
+                                        {% else %}
+                                            <p style="padding: 5px;">{{ review_count }} Reviews</p>                      
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <!-- <hr> -->
+                        <div class="review-list">
+                            <h3>All Reviews</h3>
+                            <br>
+                            {% for review in reviews %}
+                                <div class="glass-effect">
+                                    <h3>{{ review.title }}</h3>
+                                    <br>
+                                    <div style="display: flex; align-items: center;">
+                                        {% for star in review.star_list %}
+                                            <i class="{{ star }} star"></i>
+                                        {% endfor %}
+                                        <p style="margin-left: 10px; color: rgba(255, 255, 255, 0.9);"><small>by {{ review.get_reviewer_name }} on {{ review.created_at|date:"M. d, Y" }}</small></p>
+                                    </div>
+                                    <p class="raw-data">{{ review.body }}</p>
+                                </div>
+                                <br>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="font-size: large; text-align: center; width: 100%;">No reviews yet. Be the first to review this product!</p>
+                    {% endif %}
+                </details>
+            </div>
+        </div>
+        <div style="padding-bottom: 5%;"></div>
+    </div>
+{% endblock %}

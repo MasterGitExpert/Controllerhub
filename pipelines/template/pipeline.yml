@@ -1,110 +1,160 @@
-# parameters:
----
-  parameters:
-    - name: PythonVersion
-      type: string 
-      values:
-        - '3.9'
-        - '3.10'
-        - '3.11'
-        - '3.12'
-        - '3.13'
-      default: '3.11'
+# Template pipeline
+parameters:
+- name: PythonVersion
+  type: string 
+  values:
+  - '3.9'
+  - '3.10'
+  - '3.11'
+  - '3.12'
+  - '3.13'
+  default: '3.13'
 
+variables:
+  azureServiceConnection: 'appserviceconnection'
+  vmImageName: 'ubuntu-latest'
+  webAppName: 'wavelengthcontrollerhub'
+  projectRoot: $(System.DefaultWorkingDirectory)
 
-  stages:
-  - stage: "LinterStage"
+stages:
+- stage: "LinterStage"
+  displayName: "Linter Stage"
+  pool:
+    vmImage: $(vmImageName)
+  jobs:
+  - job: RunLinters
+    displayName: "Run Linter On Codebase"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m pip install flake8
+      displayName: "Install flake8"
+    - script: |
+        python -m pip install mypy
+      displayName: "Install mypy"
+    - bash: |
+        echo "Running mypy linter..."
+        python -m mypy . ; true
+      displayName: "Linter Run (mypy)"
+    - bash: |
+        echo "Running flake8 linter..."
+        python -m flake8 . ; true
+      displayName: "Linter Run (flake8)"
+- stage: "UnitTestingStage"
+  displayName: "Unit Testing Stage"
+  dependsOn: LinterStage
+  pool:
+    vmImage: $(vmImageName)
+  jobs:
+  - job: RunUnitTests
+    displayName: "Run Unit Tests"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m pip install -r requirements.txt
+      workingDirectory: $(projectRoot)
+      displayName: "Install Python Depenencies"
+    - bash: |
+        echo "Running tests..."
+        python ecommerce/manage.py test storefront; true
+      workingDirectory: $(projectRoot)
+      displayName: "Run Unit Tests"
+- stage: "DeploymentApprovalStage"
+  displayName: "Deployment Approval Stage"
+  dependsOn: UnitTestingStage
+  pool: server
+  jobs:
+  - job: DeploymentApprovalJob
+    displayName: "Manual Approval for Deployment"
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        instructions: 'Please approve the deployment.'
+        timeoutInMinutes: 2
+- stage: "BuildStage"
+  displayName: "Build Stage"
+  dependsOn: DeploymentApprovalStage
+  jobs:
+  - job: BuildJob
+    displayName: "Build Django Web Application"
     pool:
-      vmImage: ubuntu-latest
-    jobs:
-    - job: InstallPython
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: RunLinters
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install flake8
-          displayName: "Install flake8"
-        - script: |
-            python -m pip install mypy
-          displayName: "Install mypy"
-        - bash: |
-            echo "Running mypy linter..."
-            python -m mypy . ; true
-          displayName: "Linter Run (mypy)"
-        - bash: |
-            echo "Running flake8 linter..."
-            python -m flake8 . ; true
-          displayName: "Linter Run (flake8)"
-  - stage: "UnitTestingStage"
-    dependsOn: LinterStage
+      vmImage: $(vmImageName)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m venv antenv
+        source antenv/bin/activate
+        python -m pip install --upgrade pip
+        pip install setuptools
+        pip install -r requirements.txt
+      displayName: "Install requirements"
+    - script: |
+        source antenv/bin/activate
+        python ecommerce/manage.py makemigrations
+        python ecommerce/manage.py migrate
+      displayName: "Run Database Migrations"
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(projectRoot)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+      displayName: 'Archive files (Create Artifact)'
+    - publish: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+      artifact: drop
+      displayName: 'Publish Artifact'
+- stage: DeployStage
+  displayName: "Deploy Stage"
+  dependsOn: BuildStage
+  condition: succeeded()
+  jobs:
+  - job: DeploymentJob
+    displayName: "Deploy Web App"
     pool:
-      vmImage: ubuntu-latest
-    jobs:
-    - job: RunUnitTests
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-        
-        - script: |
-            python -m pip install --upgrade pip
-            python -m pip install -r requirements.txt
-          displayName: "Install Python Dependencies"
-        
-        - script: |
-            cd ecommerce
-            python manage.py migrate
-          displayName: "Run Django Migrations"
-        
-        - bash: |
-            echo "Running Django unit tests..."
-            cd ecommerce
-            python manage.py test storefront.tests.ContactFormTestCase --verbosity=2
-          displayName: "Run Contact Form Unit Tests"
-        
-        - task: PublishTestResults@2
-          condition: succeededOrFailed()
-          inputs:
-            #testResultsFiles: '**/test-*.xml'
-            testRunTitle: 'Django Tests - Python ${{ parameters.PythonVersion }}'
-          displayName: 'Publish Test Results'
-  - stage: "DeploymentApprovalStage"
-    dependsOn: UnitTestingStage
-    pool: server
-    jobs:
-    - job: DeploymentApprovalJob
-      steps:
-        - task: ManualValidation@1
-          inputs:
-            instructions: 'Please approve the deployment.'
-            timeoutInMinutes: 5
-  - stage: "DeploymentStage"
-    dependsOn: DeploymentApprovalStage
+      vmImage: $(vmImageName)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - download: current
+      artifact: drop
+      displayName: 'Download Artifact'
+    - task: AzureWebApp@1
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        appType: 'webAppLinux'
+        appName: $(webAppName)
+        deployToSlotOrASE: true
+        resourceGroupName: 'Maingroup'
+        slotName: 'production'
+        package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
+        runtimeStack: 'PYTHON|3.13'
+        startUpCommand: 'python ecommerce/manage.py runserver'
+      displayName: 'Deploy Azure Web App'
+  - job: ReviewJob
+    displayName: "Review Deployment Logs"
+    dependsOn: DeploymentJob
+    condition: succeededOrFailed()
     pool:
-      vmImage: ubuntu-latest
-    jobs:
-    - job: InstallPython
-      steps:
-        - task: UsePythonVersion@0
-          inputs:
-            versionSpec: ${{ parameters.PythonVersion }}
-          displayName: 'Use Python ${{ parameters.PythonVersion }}'
-    - job: InstallDependencies
-      dependsOn: InstallPython
-      steps:
-        - script: |
-            python -m pip install -r requirements.txt
-          displayName: "Install Python Dependencies"
-    - job: RunDeployment
-      dependsOn: InstallDependencies
-      steps:
-        - bash: |
-            echo "Running Deployment..."
-            # Add your deployment commands here
-          displayName: "Run Deployments"
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'appserviceconnection'
+        scriptType: 'pscore'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az webapp log deployment show --name $(webAppName) --resource-group Maingroup
+        powerShellErrorActionPreference: 'silentlyContinue'
+      displayName: 'Show Deployment Logs (AzureCLIV2)'

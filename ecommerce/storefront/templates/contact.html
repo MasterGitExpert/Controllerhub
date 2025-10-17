@@ -1,32 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us - Wavelength Gaming Gear</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/styles.css">
-</head>
-<body>
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <div class="navbar">
-            <a href="{% url 'home' %}" class="logo">
-                <i class="fas fa-wave-square"></i>
-                Wavelength
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="{% url 'products' %}"><i class="fas fa-gamepad"></i> Products</a></li>
-                    <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
-                    <li><a href="{% url 'contact' %}" class="active"><i class="fas fa-envelope"></i> Contact</a></li>
-                    <li><a href="{% url 'account' %}"><i class="fas fa-user"></i> Account</a></li>
-                    <li><a href="#" onclick="showCart()"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
-                </ul>
-            </nav>
-        </div>
+{% extends 'base.html' %}
+
+{% block content %}
 
         <!-- Contact Page Content -->
         <div class="page active">
@@ -202,7 +176,6 @@
         </div>
     </div>
 
-    <script src="/static/js/script.js"></script>
     <script>
         const messageField = document.getElementById('id_message');
         const charCount = document.getElementById('charCount');
@@ -232,5 +205,5 @@
             });
         }, 5000);
     </script>
-</body>
-</html>
+
+{% endblock %}

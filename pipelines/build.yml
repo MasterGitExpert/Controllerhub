@@ -10,7 +10,7 @@ parameters:
       - '3.11'
       - '3.12'
       - '3.13'
-    default: '3.11'
+    default: '3.13'
 
 extends:
   template: template/pipeline.yml

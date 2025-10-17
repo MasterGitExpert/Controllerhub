@@ -1,89 +1,138 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wavelength Gaming Gear - Products</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/styles.css">
-</head>
-<body>
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <div class="navbar">
-            <a href="{% url 'home' %}" class="logo">
-                <i class="fas fa-wave-square"></i>
-                Wavelength
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="{% url 'home' %}" ><i class="fas fa-home"></i> Home</a></li>
-                    <li><a href="{% url 'products' %}" class="active"><i class="fas fa-gamepad"></i> Products</a></li>
-                    <li><a href="{% url 'about' %}"><i class="fas fa-info-circle"></i> About</a></li>
-                    <li><a href="{% url 'contact' %}"><i class="fas fa-envelope"></i> Contact</a></li>
-                    <li><a href="{% url 'account' %}"><i class="fas fa-user"></i> Account</a></li>
-                    <li><a href="#" onclick="showCart()"><i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-badge">0</span></a></li>
-                </ul>
-            </nav>
-        </div>
+<!-- This page contains the unique components of the products catalogue page (made by Krish) -->
 
-       <!-- Products Page -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Products Page -->
     <div id="products">
+        <!-- Header -->
         <div class="page-header">
             <h1><i class="fas fa-gamepad"></i> Gaming Products</h1>
             <p>Explore our complete collection of premium gaming gear</p>
         </div>
+        <!-- Search and Filter Functionality -->
+        <div class="glass-effect">
+            <form id="form" method="post" action="{% url 'products' %}" style="display: flex; justify-content: space-around;">
+                {% csrf_token %}
+                <div class="product-controls">
+                    <label for="search"><strong>Search:</strong></label>
+                    {% if query %}
+                        <input class="form-component" name="search" type="text" id="search" placeholder="Search products..." value="{{ query }}" maxlength="32">
+                    {% else %}
+                        <input class="form-component" name="search" type="text" id="search" placeholder="Search products..." maxlength="32">
+                    {% endif %}
+                </div>
+                <div class="product-controls">
+                    <label for="sort" style="display: inline-block;"><strong>Sort:</strong></label>
+                    <!-- <div id="" style="display: inline-block;"> -->
+                        <select class="form-component" name="sort" id="sort">
+                            {% if sort == "alphabetical" %}
+                                <option class="sort-option" value="alphabetical" selected="selected">Name A to Z</option>
+                            {% else %}
+                                <option class="sort-option" value="alphabetical">Name A to Z</option>
+                            {% endif %}
 
+                            {% if sort == "non-alphabetical" %}
+                                <option class="sort-option" value="non-alphabetical" selected="selected">Name Z to A</option>
+                            {% else %}
+                                <option class="sort-option" value="non-alphabetical">Name Z to A</option>
+                            {% endif %}
+                            
+                            {% if sort == "lowest-price" %}
+                                <option class="sort-option" value="lowest-price" selected="selected">Lowest Price</option>
+                            {% else %}
+                                <option class="sort-option" value="lowest-price">Lowest Price</option>
+                            {% endif %}
+
+                            {% if sort == "highest-price" %}
+                                <option class="sort-option" value="highest-price" selected="selected">Highest Price</option>
+                            {% else %}
+                                <option class="sort-option" value="highest-price">Highest Price</option>
+                            {% endif %}
+                            
+                        </select>
+                    <!-- </div> -->
+                </div>
+                <input class="form-component" type="submit" value="Update Results">
+                <button class="form-component" type="button" onclick="resetForm()">Reset Filters</button>
+            </form>
+        </div>
+        <!-- Total Products Found -->
+        <div>
+            {% if count <= 1 %}
+                <p style="padding: 15px;">Product Found: {{ count }}</p>
+            {% else %}
+                <p style="padding: 15px;">Products Found: {{ count }}</p>
+            {% endif %}
+        </div>
+        <!-- Product Cards -->
         <div class="products-grid">
-            
             {% for product in products %}
                 {% if product.display_item %}
                     <div class="product-card">
-                        <div style="position: relative;">
-                            {% if product.discount %}
-                                <div class="sale-badge">Sale!!!</div>
-                            {% endif %} 
-                            {% if product.range.name == "Limited Edition" %}
-                                <div class="limited-edition-badge">Limited Edition</div>
-                            {% endif %}
-                        </div>
-                        <div class="product-img-container">
-                            {% if product.image %}
-                            <div>
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175px">
+                        <a href="{% url 'product' product.id %}" style="text-decoration: none;">
+                            <!-- Add Badges for special products -->
+                            <div style="position: relative;">
+                                {% if product.discount %}
+                                    <div class="sale-badge">Sale!!!</div>
+                                {% endif %} 
+                                {% if product.range.name == "Limited Edition" %}
+                                    <div class="limited-edition-badge">Limited Edition</div>
+                                {% endif %}
                             </div>
-                            {% else %} 
-                            <div class="product-no-image">
-                                <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
-                            </div>
-                            {% endif %} 
-                        </div>
-                        <div class="product-info">
-                            <p>{{ product.tagline }}</p>
-                            <h3>{{ product.name }}</h3>
-                            {% if product.discount %}
-                                <div class="product-price"><span id="dc-price">${{ product.price }}</span>
-                                    &emsp;${{ product.sale_price }}
+                            <!-- Product Image -->
+                            <div class="product-img-container">
+                                {% if product.image %}
+                                <div>
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" width="175px">
                                 </div>
-                            {% else %}
-                                <div class="product-price">${{ product.price }}</div>
-                            {% endif %}                            
-                            <button class="add-to-cart" onclick="addToCart('{{ product.name }}')">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </button>
+                                {% else %} 
+                                <div class="product-no-image">
+                                    <p style="font-size: large;">{{ product.name }} <br> (Image Coming Soon)</p>
+                                </div>
+                                {% endif %} 
+                            </div>
+                        </a>
+                        <!-- Product Details -->
+                        <div class="product-info">
+                            <a href="{% url 'product' product.id %}" style="text-decoration: none;">
+                                <!-- Show custom product tagline -->
+                                {% if product.tagline %}
+                                    <p class="tagline" style="color: #ffffff; display: flex;">{{ product.tagline }}</p>
+                                {% else %}
+                                    <br>
+                                    <br>
+                                    <br>
+                                {% endif %}
+                                <!-- Shows Name and Price -->
+                                <h3>{{ product.name }}</h3>
+                                {% if product.discount %}
+                                    <div class="product-price"><span class="dc-price">${{ product.price }}</span>
+                                        &emsp;${{ product.sale_price }}
+                                    </div>
+                                {% else %}
+                                    <h2 class="product-price" style="color: #ffffff;">${{ product.price }}</h2>
+                                {% endif %}
+                            </a>
+                            <form action="{% url 'add_to_cart' product.id %}" method="post" class="add-to-cart-form">
+                              {% csrf_token %}
+                              <input type="hidden" name="qty" value="1">
+                              <button class="add-to-cart">
+                                  <i class="fas fa-cart-plus"></i> Add to Cart
+                              </button>
+                            </form>
                         </div>
                     </div>
                 {% endif %}
             {% endfor %}
         </div>
     </div>
-
-    <!-- Cart Notification -->
-    <div id="cart-notification" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(45deg, #00d4ff, #ff0080); color: white; padding: 15px 20px; border-radius: 10px; display: none; z-index: 1001; box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);">
-        <i class="fas fa-check-circle"></i> <span id="notification-text">Item added to cart!</span>
-    </div>
-
-    <script src="/static/js/script.js"></script>
-</body>
-</html>
+    <!-- Code for resetting product search and filter functionality -->
+    <script>
+        function resetForm() {
+            console.log("Resetting form...");
+            document.getElementById("form").reset();
+            window.location.href = "{% url 'products' %}";
+        }
+    </script>
+{% endblock %}
