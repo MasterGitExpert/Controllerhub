@@ -1,3 +1,13 @@
+// Keyboard navigation - now navigates between actual pages
+function handleKeyboardNavigation(e) {
+    if (e.key >= '1' && e.key <= '5') {
+        const pages = ['/', '/products/', '/about/', '/contact/', '/account/'];
+        const pageIndex = parseInt(e.key) - 1;
+        if (pageIndex < pages.length) {
+            window.location.href = pages[pageIndex];
+        }
+    }
+}
 // Page Navigation
 // function showPage(pageId) {
     
@@ -16,8 +26,7 @@
 // Shopping Cart Functionality
 let cart = [];
 
-function addToCart(productName) {
-    price = 0 // placeholder for future dynamic pricing
+function addToCart(productName, price) {
     cart.push({ name: productName, price: price });
     showNotification(`${productName} added to cart!`);
     console.log('Cart:', cart);
@@ -30,6 +39,7 @@ function showNotification(message) {
     text.textContent = message;
     notification.style.display = 'block';
     
+    // Add entrance animation
     notification.style.opacity = '0';
     notification.style.transform = 'translateX(100px)';
     
@@ -49,6 +59,7 @@ function showNotification(message) {
 }
 
 function updateCartCount() {
+
     console.log(`Cart contains ${cart.length} items`);
 }
 
@@ -60,11 +71,13 @@ function createParticle() {
     particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
     particle.style.animationDelay = Math.random() * 2 + 's';
     
+    // Random colors
     const colors = ['#00d4ff', '#ff0080', '#00ff88'];
     particle.style.background = colors[Math.floor(Math.random() * colors.length)];
     
     document.getElementById('particles').appendChild(particle);
     
+    // Remove particle after animation
     setTimeout(() => {
         if (particle.parentNode) {
             particle.remove();

@@ -1,22 +1,27 @@
-from django.shortcuts import redirect
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
-from .models import Product, Customer, Order, OrderItem, Review
-from django.db import models
-from .forms import ReviewForm
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.urls import reverse_lazy
-from django.views.generic import FormView
-from django.contrib.auth import login, authenticate
-from .forms import SignUpForm
 
-# Create your views here.
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.conf import settings
+from django.db import models
+from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
+from django.views.generic import FormView
+from .models import Customer, Product, Order, OrderItem, Review
+from .models import ContactMessage
+from .forms import ContactForm, ReviewForm, SignUpForm
+
 
 CART_SESSION_KEY = "cart"
 
 
 def home(request):
+    """
+        Returns a rendered view for the home page
+    """
     return render(request, "index.html")
 
 
@@ -101,17 +106,53 @@ def about(request):
     return render(request, "about.html")
 
 
+def contact(request):
+    """Display and handle contact form"""
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            # Save the contact message to database
+            contact_message = form.save()
+
+            # Send email notification to admin (need to fix this)
+            try:
+                send_mail(
+                    subject=f'New Contact Form: {contact_message.subject}',
+                    message=f'From: {contact_message.name} ({contact_message.email})\n\n{contact_message.message}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[settings.ADMIN_EMAIL],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Email error: {e}")
+
+            # Add success message
+            messages.success(
+                request, 'Thank you for contacting us! We will get back to you soon.')
+            return redirect('contact')
+        else:
+            # Add error message
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ContactForm()
+
+    return render(request, 'contact.html', {'form': form})
+
+
 @login_required
 def account(request):
-    return render(request, "account.html")
-
-
-def contact(request):
-    return render(request, "contact.html")
-
-
-def account(request):
-    return render(request, "account.html")
+    if request.user.is_authenticated:
+        all_messages = ContactMessage.objects.all()
+        total_messages = ContactMessage.objects.count()
+        unread_messages = ContactMessage.objects.filter(
+            created_at__gte=request.user.last_login).count()
+        orders = Order.objects.all().filter(
+            user=request.user).order_by('id')
+        return render(request, "account.html", {"user": request.user,
+                                                "orders": orders,
+                                                "contact_messages": all_messages,
+                                                "total_messages": total_messages,
+                                                "unread_messages": unread_messages})
 
 
 def _get_cart(session):
@@ -208,13 +249,31 @@ def checkout(request):
             messages.error(request, "Please fill in all fields.")
             return render(request, "checkout.html", {"items": items, "total": total})
 
-        customer, _ = Customer.objects.get_or_create(
-            email=email,
-            defaults={"first_name": first_name, "last_name": last_name,
-                      "phone": phone, "password": "guest"},
-        )
+        # customer, _ = Customer.objects.get_or_create(
+        #     email=email,
+        #     defaults={"first_name": first_name, "last_name": last_name,
+        #               "phone": phone, "password": "guest"},
+        # )
+        try:
+            user = User.objects.get(
+                first_name=first_name, last_name=last_name, email=email)
 
-        order = Order.objects.create(customer=customer, address=address)
+            if not user:
+                user = User.objects.create_user(
+                    username=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    password=f"guest{phone}",
+                )
+        except Exception as e:
+            print(e)
+            messages.error(request, "Please fill in all fields, correctly.")
+            return render(request, "checkout.html", {"items": items, "total": total})
+
+        Customer.objects.get(user=user).phone = phone
+
+        order = Order.objects.create(user=user, address=address)
 
         for i in items:
             p = i["product"]
@@ -236,6 +295,7 @@ def checkoutsuccess(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     return render(request, "checkoutsuccess.html", {"order": order})
 
+
 def add_review(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
 
@@ -248,23 +308,25 @@ def add_review(request, product_id):
                 review.user = request.user   # only set when real user
             # else leave review.user = None
             review.save()
-            messages.success(request, "Thanks! Your review has been submitted.")
+            messages.success(
+                request, "Thanks! Your review has been submitted.")
             return redirect(f"/product/{product.id}#reviews")
         messages.error(request, "Please fix the errors below.")
     else:
         form = ReviewForm()
-
     return render(request, "reviews/add_review.html", {"form": form, "product": product})
+
 
 class SignUpView(FormView):
     template_name = "registration/signup.html"
     form_class = SignUpForm
-    success_url = reverse_lazy("home") 
+    success_url = reverse_lazy("home")
 
     def form_valid(self, form):
         user = form.save()
         raw_password = form.cleaned_data.get("password1")
-        user = authenticate(self.request, username=user.username, password=raw_password)
+        user = authenticate(
+            self.request, username=user.username, password=raw_password)
         if user is not None:
-            login(self.request, user)  
+            login(self.request, user)
         return super().form_valid(form)

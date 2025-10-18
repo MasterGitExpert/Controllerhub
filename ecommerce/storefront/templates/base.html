@@ -8,6 +8,7 @@
     <title>Wavelength Gaming Gear</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/favicon.ico' %}">
 </head>
 <body>
     <div class="particles" id="particles"></div>
@@ -26,7 +27,7 @@
                     <li><a href="{% url 'contact' %}" id="nav-contact"><i class="fas fa-envelope"></i> Contact</a></li>
                     {% if request.user.is_authenticated %}
                         <li>
-                            <a href="#" onclick="showPage('account')" id="nav-account">
+                            <a href="{% url 'account' %}" onclick="showPage('account')" id="nav-account">
                             <i class="fas fa-user"></i> Account
                             </a>
                         </li>
@@ -40,13 +41,13 @@
                             <input type="hidden" name="next" value="{{ request.path }}">
                             </form>
                         </li>
-                        {% else %}
+                    {% else %}
                         <li>
                             <a href="{% url 'login' %}" id="nav-login">
                             <i class="fas fa-sign-in-alt"></i> Log in
                             </a>
                         </li>
-                        {% endif %}
+                    {% endif %}
 
                     <li><a href="{% url 'cart' %}" id="nav-cart">
                             <i class="fas fa-shopping-cart"></i> Cart

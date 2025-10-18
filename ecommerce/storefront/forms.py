@@ -1,7 +1,8 @@
 from django import forms
-from .models import Review
+from .models import Review, ContactMessage
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+
 
 STAR_CHOICES = [
     (5, "5 – Excellent"),
@@ -10,6 +11,7 @@ STAR_CHOICES = [
     (2, "2 – Poor"),
     (1, "1 – Terrible"),
 ]
+
 
 class ReviewForm(forms.ModelForm):
     # Explicit fields so we can control labels, widgets, and validation
@@ -50,12 +52,53 @@ class ReviewForm(forms.ModelForm):
     def clean_rating(self):
         val = int(self.cleaned_data["rating"])
         if val < 1 or val > 5:
-            raise forms.ValidationError("Rating must be between 1 and 5 stars.")
+            raise forms.ValidationError(
+                "Rating must be between 1 and 5 stars.")
         return val
+
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=64, required=True)
+    last_name = forms.CharField(max_length=64, required=True)
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = ("username", "first_name", "last_name", "email",
+                  "password1", "password2")  # storefront/forms.py
+
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactMessage
+        fields = ['name', 'email', 'subject', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Your Name',
+                'required': True
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'your.email@example.com',
+                'required': True
+            }),
+            'subject': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'What can we help you with?',
+                'required': True
+            }),
+            'message': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'placeholder': 'Tell us more about your inquiry...',
+                'rows': 6,
+                'required': True
+            }),
+        }
+
+    def clean_message(self):
+        message = self.cleaned_data.get('message')
+        if len(message) < 10:
+            raise forms.ValidationError(
+                'Message must be at least 10 characters long.')
+        return message

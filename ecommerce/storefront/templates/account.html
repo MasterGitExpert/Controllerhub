@@ -2,7 +2,170 @@
 
 {% block content %}
     <!-- Account Page -->
-    <h1>Your Account</h1>
-    <p>Welcome, {{ request.user.get_username }}.</p>
-    <p><a href="{% url 'logout' %}?next=/">Log out</a></p>
+    <h1>Welcome, {{ user.get_username }}</h1>
+    <!-- <p><small>Your last Login, was at {{ previous_login | date:"d/m/Y, H:i"}}</small></p> -->
+    <!-- <p><a href="{% url 'logout' %}?next=/">Log out</a></p> -->
+
+    <div class="page active">
+        {% if user.is_staff %}
+            <div class="page-header">
+                <h1><i class="fas fa-envelope-open-text"></i> Contact Messages</h1>
+                <p>Manage customer inquiries and messages</p>
+            </div>
+
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-check-circle"></i>
+                            {{ message }}
+                            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="messages-stats">
+                <div class="stat-card">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h3>{{ total_messages }}</h3>
+                        <p>Total Messages</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-envelope-open"></i>
+                    <div>
+                        <h3>{{ unread_messages }}</h3>
+                        <p>Unread Messages</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if contact_messages %}
+                <div class="messages-list">
+                    {% for msg in contact_messages %}
+                        <div class="message-card {% if msg.is_read %}read{% else %}unread{% endif %}">
+                            <div class="message-header">
+                                <div class="message-info">
+                                    <h3>
+                                        {% if user.last_login < msg.created_at %}
+                                            <span class="unread-badge">NEW</span>
+                                        {% endif %}
+                                        {{ msg.subject }}
+                                    </h3>
+                                    <p class="message-meta">
+                                        <i class="fas fa-user" style="margin-top: 2px;"></i> {{ msg.name }} | 
+                                        <i class="fas fa-envelope" style="margin-top: 4px;"></i> {{ msg.email }} | 
+                                        <i class="fas fa-clock" style="margin-top: 3.5px;"></i> {{ msg.created_at|date:"M d, Y H:i" }}
+                                    </p>
+                                </div>
+                                <!-- <div class="message-actions">
+                                    {% if msg.is_read %}
+                                        <a href="#" class="btn-action" title="Mark as Unread">
+                                            <i class="fas fa-envelope"></i>
+                                        </a>
+                                    {% else %}
+                                        <a href="#" class="btn-action" title="Mark as Read">
+                                            <i class="fas fa-envelope-open"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="#" class="btn-delete" title="Delete" 
+                                       onclick="return confirm('Are you sure you want to delete this message from {{ msg.name }}?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div> -->
+                            </div>
+                            <div class="message-body">
+                                <p style="white-space: pre;">{{ msg.message }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h2>No Messages Yet</h2>
+                    <p>Contact messages will appear here when customers reach out.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div style="display: grid; grid-template-columns: 1fr 2fr;">
+                <!-- Show all user details -->
+                 <div class="glass-effect" style="margin: 20px; padding: 20px; max-height: max-content;">
+                     <h2>Your Details</h2>
+                     <br>   
+                     <ul class="customer-details">
+                         <li><strong>Username:</strong> {% if user.username %} {{ user.username }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>First Name:</strong> {% if user.first_name %} {{ user.first_name }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Last Name:</strong> {% if user.last_name %} {{ user.last_name }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Email:</strong> {% if user.email %} {{ user.email }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Date Joined:</strong> {% if user.date_joined %} {{ user.date_joined|date:"M d, Y H:i" }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Last Login:</strong> {% if user.last_login %} {{ user.last_login|date:"M d, Y H:i" }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Phone:</strong> {% if customer.phone %} {{ customer.phone}} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Unit:</strong> {% if customer.unit %} {{ customer.unit }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Street Number:</strong> {% if customer.street_number %} {{ customer.street_number }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Street:</strong> {% if customer.street %} {{ customer.street }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>City:</strong> {% if customer.city %} {{ customer.city }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Postcode:</strong> {% if customer.postcode %} {{ customer.postcode }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>State:</strong> {% if customer.state %} {{ customer.state }} {% else %} Not Provided {% endif %}</li>
+                         <li><strong>Country:</strong> {% if customer.country %} {{ customer.country }} {% else %} Not Provided {% endif %}</li>
+                     </ul>
+                 </div>
+                <!-- Show all Order details -->
+                <div class="glass-effect" style="margin: 20px; padding: 20px;">
+                    <h2>Your Orders:</h2>
+                    <br>
+                    {% for order in orders %}
+                        <div class="glass-effect order-history-card" >
+                            <h4>Order #{{ order.id }}</h4>
+                            <p>Order Date: {{ order.date|date:"M d, Y H:i" }}</p>
+                            {% if order.status == "Processing" %}
+                                <p>Status: <strong style="color: rgb(255, 203, 229);">{{ order.status }}</strong></p>
+                            {% elif order.status == "In Transit"%}
+                                <p>Status: <strong style="color: rgb(230, 247, 255);">{{ order.status }}</strong></p>
+                            {% elif order.status == "Delivered"%}                        
+                                <p>Status: <strong style="color: rgb(207, 255, 207);">{{ order.status }}</strong></p>
+                            {% elif order.status == "Cancelled"%}
+                                <p>Status: <strong style="color: rgb(255, 194, 194);">{{ order.status }}</strong></p>
+                            {% else %}
+                                <p>Status: <strong style="color: rgb(255, 179, 179);">{{ order.status }}</strong></p>
+                            {% endif %}
+
+                            <details>
+                                <summary>
+                                    <strong>View Products</strong>
+                                </summary>
+                                <ul class="order-items-list" style="list-style: none;">
+                                    {% for item in order.orderitem_set.all %}
+                                        <li>
+                                            &emsp; {{ item.product.name }} ({{ item.quantity }}) &emsp; ${{ item.product.sale_price|floatformat:2 }} each
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </details>
+                            <p style="text-align: right;"><strong>Total Amount:</strong> ${{ order.get_total_cost|floatformat:2 }}</p>
+                        </div>
+                        <br>
+                    {% empty %}
+                        <p style="display: flex; width: 100% ; height: 95%; justify-content: center; align-items: center;">
+                            You have no orders yet.
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Auto-hide alert messages
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-20px)';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    </script>
 {% endblock %}

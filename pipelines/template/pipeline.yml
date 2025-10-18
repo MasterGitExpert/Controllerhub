@@ -155,6 +155,12 @@ stages:
         scriptType: 'pscore'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          az webapp log deployment show --name $(webAppName) --resource-group Maingroup
+          try {
+              az webapp log deployment show --name $(webAppName) --resource-group Maingroup
+          }
+          catch {
+              # Code to handle the error
+              Write-Host "Error Retrieving Logs due to Permissions Not Found"
+          }
         powerShellErrorActionPreference: 'silentlyContinue'
       displayName: 'Show Deployment Logs (AzureCLIV2)'
