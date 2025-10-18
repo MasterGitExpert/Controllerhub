@@ -12,6 +12,7 @@ STAR_CHOICES = [
     (1, "1 – Terrible"),
 ]
 
+
 class ReviewForm(forms.ModelForm):
     # Explicit fields so we can control labels, widgets, and validation
     title = forms.CharField(
@@ -51,17 +52,20 @@ class ReviewForm(forms.ModelForm):
     def clean_rating(self):
         val = int(self.cleaned_data["rating"])
         if val < 1 or val > 5:
-            raise forms.ValidationError("Rating must be between 1 and 5 stars.")
+            raise forms.ValidationError(
+                "Rating must be between 1 and 5 stars.")
         return val
+
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    first_name = forms.CharField(max_length=64, required=True)
+    last_name = forms.CharField(max_length=64, required=True)
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")# storefront/forms.py
-# Create this new file
-
+        fields = ("username", "first_name", "last_name", "email",
+                  "password1", "password2")  # storefront/forms.py
 
 
 class ContactForm(forms.ModelForm):
@@ -91,9 +95,10 @@ class ContactForm(forms.ModelForm):
                 'required': True
             }),
         }
-        
+
     def clean_message(self):
         message = self.cleaned_data.get('message')
         if len(message) < 10:
-            raise forms.ValidationError('Message must be at least 10 characters long.')
+            raise forms.ValidationError(
+                'Message must be at least 10 characters long.')
         return message

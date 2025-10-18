@@ -21,6 +21,18 @@
       </div>
 
       <div class="form-row">
+        <label for="{{ form.username.id_for_label }}">First Name</label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}<ul class="errorlist"><li>{{ form.first_name.errors.0 }}</li></ul>{% endif %}
+      </div>
+
+      <div class="form-row">
+        <label for="{{ form.username.id_for_label }}">Last Name</label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}<ul class="errorlist"><li>{{ form.last_name.errors.0 }}</li></ul>{% endif %}
+      </div>
+
+      <div class="form-row">
         <label for="{{ form.email.id_for_label }}">Email</label>
         {{ form.email }}
         {% if form.email.errors %}<ul class="errorlist"><li>{{ form.email.errors.0 }}</li></ul>{% endif %}

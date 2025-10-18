@@ -1,9 +1,8 @@
 """Django data models for the ecommerce storefront application."""
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-import datetime
-from django.conf import settings
-
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 
 # Create your models here.
 
@@ -17,14 +16,43 @@ class Customer(models.Model):
         - phone
         - password
     """
-    first_name = models.CharField(max_length=64)
-    last_name = models.CharField(max_length=64)
-    email = models.EmailField(max_length=128, unique=True)
-    phone = models.CharField(max_length=10)
-    password = models.CharField(max_length=32)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    phone = models.CharField(max_length=10, unique=True)
+    unit = models.CharField(max_length=8, default="", blank=True, null=True)
+    street_number = models.CharField(
+        max_length=8, default="", blank=True, null=True)
+    street = models.CharField(max_length=64, default="", blank=True, null=True)
+    city = models.CharField(max_length=64, default="", blank=True, null=True)
+    postcode = models.CharField(
+        max_length=6, default="", blank=True, null=True)
+    state = models.CharField(max_length=32, default="", blank=True, null=True)
+    country = models.CharField(
+        max_length=32, default="", blank=True, null=True)
+
+    def get_name(self) -> str:
+        return f"{self.user.get_full_name()}"
+
+    def get_username(self) -> str:
+        return f"{self.user.get_username()}"
+
+    def get_address(self) -> str:
+        if self.street_number and self.street and self.city and self.state \
+           and self.postcode and self.country:
+            unit_no = f"{self.unit}/" if self.unit else ""
+            return f"{unit_no}{self.street_number} {self.street}, " + \
+                f"{self.city}, {self.state}, {self.postcode}, {self.country}"
 
     def __str__(self) -> str:
-        return f"{self.last_name} {self.first_name} - {self.email}"
+        return f"{self.get_name()} - {self.phone} @ {self.get_address()} "
+
+
+def create_customer(sender, instance, created, **kwargs):
+    if created:
+        customer_profile = Customer(user=instance)
+        customer_profile.save()
+
+
+post_save.connect(create_customer, sender=User)
 
 
 class ProductCategory(models.Model):
@@ -34,11 +62,12 @@ class ProductCategory(models.Model):
 
         - name
     """
+
+    name = models.CharField(max_length=16)
+
     class Meta:
         verbose_name = "Product Category"
         verbose_name_plural = "Product Categories"
-
-    name = models.CharField(max_length=16)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -98,7 +127,6 @@ class Product(models.Model):
     discount = models.BooleanField(default=False)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2)
 
-
     def is_in_stock(self) -> bool:
         """ Returns True if the product is in stock. """
         return self.stock > 0
@@ -134,14 +162,27 @@ class Order(models.Model):
         - date
         - status
     """
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     address = models.CharField(max_length=256)
-    date = models.DateTimeField(default=datetime.datetime.now)
-    status = models.CharField(max_length=32, default="In Transit")
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=32, default="Processing")
+
+    def get_total_cost(self):
+        total = 0.0
+        order_items = OrderItem.objects.filter(order=self)
+        for item in order_items:
+            total += float(item.product.sale_price) * int(item.quantity)
+        return total
 
     def __str__(self) -> str:
-        return f"Order {self.order_id} by {self.customer.first_name} " \
-            f"{self.customer.last_name} - {self.status}"
+        try:
+            if self.user.get_username():
+                username = self.user.get_username()
+        except:
+            username = "Not Set"
+
+        return f"Order {self.pk} by {username} " + \
+            f"on {self.date} ({self.status}) Total: ${self.get_total_cost()}"
 
 
 class OrderItem(models.Model):
@@ -156,8 +197,9 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self) -> str:
-        return f"Order Item {self.order.order_id}: {self.product.name} x " \
-            f"{self.quantity} = ${self.product.price * self.quantity}"
+        return f"Order {self.order.pk} of {self.product.name}: " + \
+            f"{self.product.price} x {self.quantity} = " + \
+            f"${self.product.price * self.quantity}"
 
 
 class Review(models.Model):
@@ -173,12 +215,7 @@ class Review(models.Model):
     product = models.ForeignKey(
         'Product', on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,       
-        null=True, blank=True,
-        on_delete=models.SET_NULL,
-        related_name='reviews')
-    customer = models.ForeignKey(
-        'Customer', on_delete=models.SET_NULL, null=True, blank=True)
+        User, on_delete=models.CASCADE, null=True, blank=True)
     rating = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
@@ -189,21 +226,16 @@ class Review(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-
-    def get_reviewer_name(self):
-        if self.user:
-            full = (self.user.get_full_name() or "").strip()
-            return full or self.user.get_username()
-        if self.customer:
-            first = (self.customer.first_name or "").strip()
-            last = (self.customer.last_name or "").strip()
-            name = f"{first} {last}".strip()
-            return name or (self.customer.email or "Anonymous")
-        return "Anonymous"
+    def get_reviewer_username(self):
+        try:
+            if self.user.get_username():
+                return self.user.get_username()
+        except:
+            return "Anonymous"
 
     def star_list(self):
         stars = []
-        counter = round(self.rating * 2) / 2 
+        counter = round(self.rating * 2) / 2
         for _ in range(5):
             if counter - 1 >= 0:
                 stars.append("fas fa-star")
@@ -214,12 +246,10 @@ class Review(models.Model):
                 stars.append("far fa-star")
         return stars
 
-
     def __str__(self):
-        who = self.get_reviewer_name()
-        return f"{who} reviewed {self.product.name} at {self.rating}/5 - " 
-            #    f"AVG: {self.get_overall_product_review()} " \
-            #    f"Total: {self.total_product_reviews()} reviews"
+        who = self.get_reviewer_username()
+        return f"{who} reviewed {self.product.name} at {self.rating}/5 " + \
+            f"- {self.title}"
 
 
 class ContactMessage(models.Model):
@@ -228,12 +258,10 @@ class ContactMessage(models.Model):
     subject = models.CharField(max_length=200)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
-    
+    # is_read = models.BooleanField(default=False)
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"{self.name} - {self.subject}"
-
-

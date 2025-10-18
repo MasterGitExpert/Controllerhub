@@ -30,8 +30,8 @@ urlpatterns = [
     path("_routes/", _routes, name="_routes"),
 
     # Contact message management URLs
-    path('message/<int:message_id>/read/', views.mark_message_read, name='mark_message_read'),
-    path('message/<int:message_id>/unread/', views.mark_message_unread, name='mark_message_unread'),
-    path('message/<int:message_id>/delete/', views.delete_message, name='delete_message')
+    # path('message/<int:message_id>/read/', views.mark_message_read, name='mark_message_read'),
+    # path('message/<int:message_id>/unread/', views.mark_message_unread, name='mark_message_unread'),
+    # path('message/<int:message_id>/delete/', views.delete_message, name='delete_message')
 ]
 

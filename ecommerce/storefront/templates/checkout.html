@@ -41,6 +41,7 @@
     <form method="post" class="panel checkout-form">
       {% csrf_token %}
       <div class="panel-title">Shipping Details</div>
+      <p><small>Make sure your logged in before ordering. Click here to <a href="{% url 'login' %}" class="link" style="color: rgb(124, 141, 146);">login.</a></small></p>
 
       <div class="form-grid">
         <div class="form-group">
@@ -60,7 +61,7 @@
 
         <div class="form-group">
           <label>Phone</label>
-          <input class="form-control form-control--lg" type="text" name="phone" required autocomplete="tel" placeholder="0400 000 000">
+          <input class="form-control form-control--lg" type="text" name="phone" required autocomplete="tel" placeholder="0400 000 000" maxlength="12" format>
         </div>
 
         <div class="form-group form-group--full">

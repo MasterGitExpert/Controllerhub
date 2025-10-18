@@ -3,14 +3,19 @@
 {% block content %}
   <div class="glass-effect" style="padding: 2rem;">
       <h2>Write a Review for {{ product.name }}</h2>
-      
+      <br>
       <form method="post">
           {% csrf_token %}
-          {{ form.as_p }}
-          <button type="submit" class="btn btn-success">Submit Review</button>
+          <div class="form-spacing">
+            {{ form.as_p }}
+          </div>
+          <br>
+          <button type="submit" class="btn btn-success" style="float: right; font-size: 0.9rem; margin-top: 25px;">
+            Submit Review
+          </button>
       </form>
 
       <br>
-      <a href="{% url 'product' product.id %}" class="btn btn-secondary">Back to Product</a>
+      <a href="{% url 'product' product.id %}" class="btn btn-secondary" style="font-size: 0.9rem;">Back to Product</a>
   </div>
 {% endblock %}

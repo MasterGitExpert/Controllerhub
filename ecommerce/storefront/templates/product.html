@@ -52,14 +52,36 @@
                         {% endif %}
                         <p style="font-weight: bold;">Overview</p>
                         <p class="raw-data">{{ product.overview }}</p>
-
                         <div class="product-detail-buttons">
-                            <a href="#" class="cta-button">
-                                <i class="fas fa-cart-plus"></i> Add to Cart
-                            </a>
-                           <a href="{% url 'add_review' product.id %}" class="product-path" style="margin-bottom: 0; font-size: 1.1rem;">
-                                <i class="fa fa-comments"></i> Add Review
-                            </a>
+                            {% if user.is_staff %}
+                                <form action="{% url 'add_to_cart' product.id %}" method="post" class="add-to-cart-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="qty" value="1">
+                                    <button class="add-to-cart" style="padding: 17px 50px;" disabled>
+                                        <i class="fas fa-cart-plus"></i> <span style="font-family: 1.02rem;">Add to Cart</span>
+                                    </button>
+                                </form>
+                                <a href="#" class="product-path" style="margin-bottom: 0; font-size: 1.1rem;">
+                                    <i class="fa fa-comments"></i> Add Review
+                                </a>
+                            {% else %}
+                                <form action="{% url 'add_to_cart' product.id %}" method="post" class="add-to-cart-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="qty" value="1">
+                                    <button class="add-to-cart" style="padding: 17px 50px;">
+                                        <i class="fas fa-cart-plus"></i> <span style="font-family: 1.02rem;">Add to Cart</span>
+                                    </button>
+                                </form>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'add_review' product.id %}" class="product-path" style="margin-bottom: 0; font-size: 1.1rem;">
+                                        <i class="fa fa-comments"></i> Add Review
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'login' %}" class="product-path" style="margin-bottom: 0; font-size: 1.1rem;">
+                                        <i class="fa fa-comments"></i> Add Review
+                                    </a>
+                                {% endif%}
+                            {% endif %}
 
                         </div>
                     </div>
@@ -141,7 +163,7 @@
                                         {% for star in review.star_list %}
                                             <i class="{{ star }} star"></i>
                                         {% endfor %}
-                                        <p style="margin-left: 10px; color: rgba(255, 255, 255, 0.9);"><small>by {{ review.get_reviewer_name }} on {{ review.created_at|date:"M. d, Y" }}</small></p>
+                                        <p style="margin-left: 10px; color: rgba(255, 255, 255, 0.9);"><small>by {{ review.get_reviewer_username }} on {{ review.created_at|date:"M. d, Y" }}</small></p>
                                     </div>
                                     <p class="raw-data">{{ review.body }}</p>
                                 </div>
