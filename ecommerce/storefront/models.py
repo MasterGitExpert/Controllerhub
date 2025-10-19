@@ -132,6 +132,17 @@ class Order(models.Model):
     """
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     address = models.CharField(max_length=256)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=32, default="Processing")
+    payment_status = models.CharField(max_length=32, default="unpaid")
+
+
+    def get_total_cost(self):
+        total = 0.0
+        order_items = OrderItem.objects.filter(order=self)
+        for item in order_items:
+            total += float(item.product.sale_price) * int(item.quantity)
+        return total
     date = models.DateTimeField(default=datetime.datetime.now)
     status = models.CharField(max_length=32, default="In Transit")
 
@@ -152,5 +163,87 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self) -> str:
+        return f"Order {self.order.pk} of {self.product.name}: " + \
+            f"{self.product.price} x {self.quantity} = " + \
+            f"${self.product.price * self.quantity}"
+
+
+class Review(models.Model):
+    """
+        Review table to store product reviews by customers
+        - product
+        - customer
+        - rating
+        - title
+        - body
+        - created_at
+    """
+    product = models.ForeignKey(
+        'Product', on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True)
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    title = models.CharField(max_length=100)
+    body = models.TextField(max_length=2000, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def get_reviewer_username(self):
+        try:
+            if self.user.get_username():
+                return self.user.get_username()
+        except:
+            return "Anonymous"
+
+    def star_list(self):
+        stars = []
+        counter = round(self.rating * 2) / 2
+        for _ in range(5):
+            if counter - 1 >= 0:
+                stars.append("fas fa-star")
+                counter -= 1
+            elif counter - 0.5 == 0:
+                stars.append("fas fa-star-half-alt")
+            else:
+                stars.append("far fa-star")
+        return stars
+
+    def __str__(self):
+        who = self.get_reviewer_username()
+        return f"{who} reviewed {self.product.name} at {self.rating}/5 " + \
+            f"- {self.title}"
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    # is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.subject}"
+    
+
+class Payment(models.Model):
+    order = models.OneToOneField("Order", on_delete=models.CASCADE, related_name="payment")
+    provider = models.CharField(max_length=20, default="demo")
+    brand = models.CharField(max_length=20, blank=True)
+    last4 = models.CharField(max_length=4, blank=True)
+    exp_month = models.PositiveSmallIntegerField(null=True, blank=True)
+    exp_year  = models.PositiveSmallIntegerField(null=True, blank=True)
+    status = models.CharField(max_length=30, default="succeeded")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment {self.id} - {self.provider} (****{self.last4})"
         return f"Order Item {self.order.order_id}: {self.product.name} x " \
             f"{self.quantity} = ${self.product.price * self.quantity}"

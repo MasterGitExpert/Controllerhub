@@ -1,5 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.views.generic import FormView
+from .models import Customer, Product, Order, OrderItem, Review
+from .models import ContactMessage
+from .forms import ContactForm, ReviewForm, SignUpForm
+import re
+from .models import Payment
 from django.contrib import messages
 from .models import Product, Customer, Order, OrderItem
 
@@ -180,6 +186,89 @@ def checkout(request):
 
         return redirect("checkoutsuccess", order_id=order.id)
 
+    return render(request, "checkout.html", {"items": items, "total": total})
+
+def checkout(request):
+    cart_dict = _get_cart(request.session)
+    items = _cart_items(cart_dict)
+    if not items:
+        messages.warning(request, "Your cart is empty.")
+        return redirect("home")
+
+    total, _ = _totals(items)
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name  = request.POST.get("last_name", "").strip()
+        email      = request.POST.get("email", "").strip()
+        phone      = request.POST.get("phone", "").strip()
+        address    = request.POST.get("address", "").strip()
+
+
+        card_name   = request.POST.get("card_name", "").strip()
+        card_number = (request.POST.get("card_number", "") or "").replace(" ", "")
+        card_exp    = request.POST.get("card_exp", "").strip()
+        card_cvc    = request.POST.get("card_cvc", "").strip()
+
+
+        valid_num = re.fullmatch(r"\d{13,19}", card_number)
+        valid_exp = re.fullmatch(r"(0[1-9]|1[0-2])\/(\d{2})", card_exp)
+        valid_cvc = re.fullmatch(r"\d{3,4}", card_cvc)
+
+        if not all([first_name, last_name, email, phone, address, card_name, valid_num, valid_exp, valid_cvc]):
+            messages.error(request, "Please complete all fields with valid details.")
+            return render(request, "checkout.html", {"items": items, "total": total})
+
+        try:
+            user = User.objects.get(first_name=first_name, last_name=last_name, email=email)
+        except User.DoesNotExist:
+            user = User.objects.create_user(
+                username=email, first_name=first_name, last_name=last_name,
+                email=email, password=f"guest{phone}",
+            )
+
+        try:
+            cust = Customer.objects.get(user=user)
+            if phone and cust.phone != phone:
+                cust.phone = phone
+                cust.save(update_fields=["phone"])
+        except Customer.DoesNotExist:
+            pass
+
+        brand = "visa" if card_number.startswith("4") else "card"
+        last4 = card_number[-4:]
+        exp_month = int(valid_exp.group(1))
+        exp_year = 2000 + int(valid_exp.group(2))
+
+        # Create order
+        order = Order.objects.create(user=user, address=address, payment_status="succeeded")
+
+        # Items + stock
+        for i in items:
+            p = i["product"]; qty = i["quantity"]
+            OrderItem.objects.create(order=order, product=p, quantity=qty)
+            if p.stock is not None:
+                p.stock = max(0, p.stock - qty)
+                p.save(update_fields=["stock"])
+
+        # Save demo payment
+        Payment.objects.create(
+            order=order,
+            provider="demo",
+            brand=brand,
+            last4=last4,
+            exp_month=exp_month,
+            exp_year=exp_year,
+            status="succeeded",
+        )
+
+        # Clear cart and redirect
+        request.session[CART_SESSION_KEY] = {}
+        request.session.modified = True
+
+        return redirect("checkoutsuccess", order_id=order.id)
+
+    # GET
     return render(request, "checkout.html", {"items": items, "total": total})
 
 def checkoutsuccess(request, order_id):
