@@ -17,8 +17,6 @@ import re
 from .models import Customer, Product, Order, OrderItem, Review, ContactMessage
 
 
-
-
 CART_SESSION_KEY = "cart"
 
 
@@ -245,16 +243,17 @@ def checkout(request):
     if request.method == "POST":
         # Shipping
         first_name = request.POST.get("first_name", "").strip()
-        last_name  = request.POST.get("last_name", "").strip()
-        email      = request.POST.get("email", "").strip()
-        phone      = request.POST.get("phone", "").strip()
-        address    = request.POST.get("address", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        address = request.POST.get("address", "").strip()
 
         # Payment (demo)
-        card_name   = request.POST.get("card_name", "").strip()
-        card_number = (request.POST.get("card_number", "") or "").replace(" ", "")
-        card_exp    = request.POST.get("card_exp", "").strip()
-        card_cvc    = request.POST.get("card_cvc", "").strip()
+        card_name = request.POST.get("card_name", "").strip()
+        card_number = (request.POST.get("card_number", "")
+                       or "").replace(" ", "")
+        card_exp = request.POST.get("card_exp", "").strip()
+        card_cvc = request.POST.get("card_cvc", "").strip()
 
         # Basic validation
         valid_num = re.fullmatch(r"\d{13,19}", card_number)
@@ -262,12 +261,14 @@ def checkout(request):
         valid_cvc = re.fullmatch(r"\d{3,4}", card_cvc)
 
         if not all([first_name, last_name, email, phone, address, card_name, valid_num, valid_exp, valid_cvc]):
-            messages.error(request, "Please complete all fields with valid details.")
+            messages.error(
+                request, "Please complete all fields with valid details.")
             return render(request, "checkout.html", {"items": items, "total": total})
 
         # Get or create a user
         try:
-            user = User.objects.get(first_name=first_name, last_name=last_name, email=email)
+            user = User.objects.get(
+                first_name=first_name, last_name=last_name, email=email)
         except User.DoesNotExist:
             user = User.objects.create_user(
                 username=email,
@@ -290,7 +291,7 @@ def checkout(request):
         brand = "visa" if card_number.startswith("4") else "card"
         last4 = card_number[-4:]
         exp_month = int(valid_exp.group(1))
-        exp_year  = 2000 + int(valid_exp.group(2))
+        exp_year = 2000 + int(valid_exp.group(2))
 
         # Create order
         order = Order.objects.create(user=user, address=address)
@@ -320,12 +321,11 @@ def checkout(request):
         # Clear cart & redirect
         request.session[CART_SESSION_KEY] = {}
         request.session.modified = True
-        
+
         return redirect("checkoutsuccess", order_id=order.id)
 
     # GET
     return render(request, "checkout.html", {"items": items, "total": total})
-
 
 
 def checkoutsuccess(request, order_id):
@@ -342,7 +342,7 @@ def add_review(request, product_id):
             review = form.save(commit=False)
             review.product = product
             if request.user.is_authenticated:
-                review.user = request.user   
+                review.user = request.user
             review.save()
             messages.success(
                 request, "Thanks! Your review has been submitted.")
@@ -366,3 +366,8 @@ class SignUpView(FormView):
         if user is not None:
             login(self.request, user)
         return super().form_valid(form)
+
+
+def customize(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    return render(request, "customize.html", {"product": product})

@@ -122,6 +122,15 @@
                                         <i class="fas fa-cart-plus"></i> Add to Cart
                                     </button>
                                 </form>
+                                <!-- Customize Button -->
+                                {% if "mouse" in product.name|lower %}
+                                <form action="{% url 'customize' product.id %}" method="get" class="customize-form">
+                                <button class="add-to-cart" 
+                                type="submit"  
+                                style="transform: scale(0.7); width: 60%; font-size: 14px;" disabled> 
+                                🎨 Customize</button>
+                                </form>
+                                {% endif %}
                             {% else %}
                                 <form action="{% url 'add_to_cart' product.id %}" method="post" class="add-to-cart-form">
                                     {% csrf_token %}
@@ -130,6 +139,15 @@
                                         <i class="fas fa-cart-plus"></i> Add to Cart
                                     </button>
                                 </form>
+                                <!-- Customize Button -->
+                                {% if "mouse" in product.name|lower %}
+                                <form action="{% url 'customize' product.id %}" method="get" class="customize-form">
+                                <button class="add-to-cart" 
+                                type="submit"  
+                                style="transform: scale(0.7); width: 60%; font-size: 14px;"> 
+                                🎨 Customize</button>
+                                </form>
+                                {% endif %}
                             {% endif%}
                         </div>
                     </div>

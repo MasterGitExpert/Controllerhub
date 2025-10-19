@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Customer, ProductCategory, ProductRange, Product
-from .models import Order, Review, OrderItem, ContactMessage
+from .models import Order, Review, OrderItem, ContactMessage, ProductColor 
+from .models import ProductSize
 from django.contrib.auth.models import User
 
 # Register your models here.
@@ -12,6 +13,8 @@ admin.site.register(Order, readonly_fields=['date'])
 admin.site.register(OrderItem)
 admin.site.register(Review, readonly_fields=['created_at'])
 admin.site.register(ContactMessage, readonly_fields=['created_at'])
+admin.site.register(ProductColor)
+admin.site.register(ProductSize)
 
 
 class CustomerInline(admin.StackedInline):
