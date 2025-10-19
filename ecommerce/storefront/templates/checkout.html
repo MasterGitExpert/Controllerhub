@@ -37,11 +37,11 @@
       </div>
     </aside>
 
-    <!-- Shipping / details -->
+    <!-- Shipping + Payment -->
     <form method="post" class="panel checkout-form">
       {% csrf_token %}
       <div class="panel-title">Shipping Details</div>
-      <p><small>Make sure your logged in before ordering. Click here to <a href="{% url 'login' %}" class="link" style="color: rgb(124, 141, 146);">login.</a></small></p>
+
 
       <div class="form-grid">
         <div class="form-group">
@@ -61,12 +61,32 @@
 
         <div class="form-group">
           <label>Phone</label>
-          <input class="form-control form-control--lg" type="text" name="phone" required autocomplete="tel" placeholder="0400 000 000" maxlength="12" format>
+          <input class="form-control form-control--lg" type="text" name="phone" required autocomplete="tel" placeholder="0400 000 000">
         </div>
 
         <div class="form-group form-group--full">
           <label>Address</label>
           <textarea class="form-control form-control--lg" name="address" rows="3" required autocomplete="street-address" placeholder="123 Example St, Suburb, State"></textarea>
+        </div>
+      </div>
+
+      <div class="panel-title">Payment</div>
+      <div class="form-grid">
+        <div class="form-group form-group--full">
+          <label>Name on Card</label>
+          <input class="form-control form-control--lg" name="card_name" required>
+        </div>
+        <div class="form-group">
+          <label>Card Number</label>
+          <input class="form-control form-control--lg" name="card_number" inputmode="numeric" placeholder="4242 4242 4242 4242" required>
+        </div>
+        <div class="form-group">
+          <label>Expiry (MM/YY)</label>
+          <input class="form-control form-control--lg" name="card_exp" placeholder="04/27" required>
+        </div>
+        <div class="form-group">
+          <label>CVC</label>
+          <input class="form-control form-control--lg" name="card_cvc" inputmode="numeric" placeholder="123" required>
         </div>
       </div>
 
@@ -81,7 +101,7 @@
     <div class="empty-state">
       <div class="empty-icon"><i class="fas fa-shopping-basket"></i></div>
       <h3>Your cart is empty.</h3>
-      <p>Add something you’re excited about - we’ll keep it safe here.</p>
+      <p>Add something you’re excited about — we’ll keep it safe here.</p>
       <a href="{% url 'products' %}" class="btn btn-primary">
         <i class="fas fa-gamepad"></i> Browse Products
       </a>
