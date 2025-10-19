@@ -16,7 +16,7 @@
   </div>
 
   <!-- Options -->
-  <form method="post" action="{% url 'add_to_cart' product.id %}" style="margin-top: 20px;">
+  <form method="post" action="{% url 'add_to_cart' product.id %}" onsubmit="return validateForm()" style="margin-top: 20px;">
     {% csrf_token %}
     <input type="hidden" name="qty" value="1">
 
@@ -53,8 +53,19 @@
     </a>
   </form>
 
-  <!-- Color & Size Preview -->
+  <!-- Color & Size Preview  -->
   <script>
+    function validateForm() {
+      const color = document.getElementById('color').value;
+      const size = document.getElementById('size').value;
+
+      if (color === 'default' && size === 'default') {
+        alert('⚠️ Please select at least one customization (color or size).');
+        return false; 
+      }
+      return true; 
+    }
+
     function updatePreview() {
       const color = document.getElementById('color').value;
       const size = document.getElementById('size').value;
