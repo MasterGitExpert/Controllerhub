@@ -13,6 +13,10 @@ from django.views.generic import FormView
 from .models import Customer, Product, Order, OrderItem, Review
 from .models import ContactMessage
 from .forms import ContactForm, ReviewForm, SignUpForm
+import re
+from .models import Customer, Product, Order, OrderItem, Review, ContactMessage
+
+
 
 
 CART_SESSION_KEY = "cart"
@@ -239,42 +243,59 @@ def checkout(request):
     total, _ = _totals(items)
 
     if request.method == "POST":
+        # Shipping
         first_name = request.POST.get("first_name", "").strip()
-        last_name = request.POST.get("last_name", "").strip()
-        email = request.POST.get("email", "").strip()
-        phone = request.POST.get("phone", "").strip()
-        address = request.POST.get("address", "").strip()
+        last_name  = request.POST.get("last_name", "").strip()
+        email      = request.POST.get("email", "").strip()
+        phone      = request.POST.get("phone", "").strip()
+        address    = request.POST.get("address", "").strip()
 
-        if not all([first_name, last_name, email, phone, address]):
-            messages.error(request, "Please fill in all fields.")
+        # Payment (demo)
+        card_name   = request.POST.get("card_name", "").strip()
+        card_number = (request.POST.get("card_number", "") or "").replace(" ", "")
+        card_exp    = request.POST.get("card_exp", "").strip()
+        card_cvc    = request.POST.get("card_cvc", "").strip()
+
+        # Basic validation
+        valid_num = re.fullmatch(r"\d{13,19}", card_number)
+        valid_exp = re.fullmatch(r"(0[1-9]|1[0-2])\/(\d{2})", card_exp)
+        valid_cvc = re.fullmatch(r"\d{3,4}", card_cvc)
+
+        if not all([first_name, last_name, email, phone, address, card_name, valid_num, valid_exp, valid_cvc]):
+            messages.error(request, "Please complete all fields with valid details.")
             return render(request, "checkout.html", {"items": items, "total": total})
 
-        # customer, _ = Customer.objects.get_or_create(
-        #     email=email,
-        #     defaults={"first_name": first_name, "last_name": last_name,
-        #               "phone": phone, "password": "guest"},
-        # )
+        # Get or create a user
         try:
-            user = User.objects.get(
-                first_name=first_name, last_name=last_name, email=email)
+            user = User.objects.get(first_name=first_name, last_name=last_name, email=email)
+        except User.DoesNotExist:
+            user = User.objects.create_user(
+                username=email,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password=f"guest{phone}",
+            )
 
-            if not user:
-                user = User.objects.create_user(
-                    username=email,
-                    first_name=first_name,
-                    last_name=last_name,
-                    email=email,
-                    password=f"guest{phone}",
-                )
-        except Exception as e:
-            print(e)
-            messages.error(request, "Please fill in all fields, correctly.")
-            return render(request, "checkout.html", {"items": items, "total": total})
+        # Keep customers phone up to date if we have their profile
+        try:
+            cust = Customer.objects.get(user=user)
+            if phone and cust.phone != phone:
+                cust.phone = phone
+                cust.save(update_fields=["phone"])
+        except Customer.DoesNotExist:
+            pass
 
-        Customer.objects.get(user=user).phone = phone
+        # Derive minimal payment data for demo receipt
+        brand = "visa" if card_number.startswith("4") else "card"
+        last4 = card_number[-4:]
+        exp_month = int(valid_exp.group(1))
+        exp_year  = 2000 + int(valid_exp.group(2))
 
+        # Create order
         order = Order.objects.create(user=user, address=address)
 
+        # Add items and update stock
         for i in items:
             p = i["product"]
             qty = i["quantity"]
@@ -283,12 +304,28 @@ def checkout(request):
                 p.stock = max(0, p.stock - qty)
                 p.save(update_fields=["stock"])
 
+        from django.apps import apps
+
+        Payment = apps.get_model("storefront", "Payment")
+        Payment.objects.create(
+            order=order,
+            provider="demo",
+            brand=brand,
+            last4=last4,
+            exp_month=exp_month,
+            exp_year=exp_year,
+            status="succeeded",
+        )
+
+        # Clear cart & redirect
         request.session[CART_SESSION_KEY] = {}
         request.session.modified = True
-
+        
         return redirect("checkoutsuccess", order_id=order.id)
 
+    # GET
     return render(request, "checkout.html", {"items": items, "total": total})
+
 
 
 def checkoutsuccess(request, order_id):
@@ -305,8 +342,7 @@ def add_review(request, product_id):
             review = form.save(commit=False)
             review.product = product
             if request.user.is_authenticated:
-                review.user = request.user   # only set when real user
-            # else leave review.user = None
+                review.user = request.user   
             review.save()
             messages.success(
                 request, "Thanks! Your review has been submitted.")
