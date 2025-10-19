@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="customize-page" style="text-align: center; padding: 30px;">
+  <h1>Customize Your {{ product.name }}</h1>
+  <p>Choose your preferred color and size below to personalize your {{ product.name }}.</p>
+
+  <!-- Product Image -->
+  <div class="product-preview" style="margin: 30px auto;">
+    <img 
+      id="product-image" 
+      src="{{ product.image.url }}" 
+      alt="{{ product.name }}" 
+      width="300px" 
+      style="border-radius: 10px;">
+  </div>
+
+  <!-- Options -->
+  <form method="post" action="{% url 'add_to_cart' product.id %}" style="margin-top: 20px;">
+    {% csrf_token %}
+    <input type="hidden" name="qty" value="1">
+
+    <!-- Color -->
+    <div style="margin-bottom: 20px;">
+      <label for="color"><strong>Choose Color:</strong></label>
+      <select id="color" name="color" onchange="updatePreview()">
+        <option value="default" selected>Default</option>
+        <option value="red">Pink</option>
+        <option value="blue">Blue</option>
+        <option value="black">Black</option>
+        <option value="white">White</option>
+      </select>
+    </div>
+    
+    <!-- Size -->
+    <div style="margin-bottom: 20px;">
+      <label for="size"><strong>Choose Size:</strong></label>
+      <select id="size" name="size" onchange="updatePreview()">
+        <option value="default" selected>Default</option>
+        <option value="small">Small</option>
+        <option value="large">Large</option>
+      </select>
+    </div>
+
+    <button class="add-to-cart" type="submit"
+            style="width:160px; height:45px; font-size:16px;">
+      <i class="fas fa-cart-plus"></i> Add to Cart
+    </button>
+
+    <a href="{% url 'products' %}" 
+       style="display:inline-block; margin-left:15px; background-color:#999; color:#fff; padding:10px 20px; border-radius:5px; text-decoration:none; cursor:pointer;">
+      Back to Products
+    </a>
+  </form>
+
+  <!-- Color & Size Preview -->
+  <script>
+    function updatePreview() {
+      const color = document.getElementById('color').value;
+      const size = document.getElementById('size').value;
+      const image = document.getElementById('product-image');
+      if (!image) return;
+
+      // color
+      switch (color) {
+        case 'red':
+          image.style.filter = 'hue-rotate(-100deg) saturate(4) brightness(1.2)';
+          break;
+        case 'blue':
+          image.style.filter = 'hue-rotate(200deg) saturate(4) brightness(1.1)';
+          break;
+        case 'black':
+          image.style.filter = 'brightness(0.15)';
+          break;
+        case 'white':
+          image.style.filter = 'brightness(1.5)';
+          break;
+        default:
+          image.style.filter = 'none';
+      }
+
+      // size
+      switch (size) {
+        case 'small':
+          image.style.transform = 'scale(0.8)';
+          break;
+        case 'large':
+          image.style.transform = 'scale(1.2)';
+          break;
+        default:
+          image.style.transform = 'scale(1)';
+      }
+    }
+  </script>
+</div>
+{% endblock %}

@@ -23,4 +23,5 @@ urlpatterns = [
     path("checkout/success/<int:order_id>/", views.checkoutsuccess, name="checkoutsuccess"),
 
     path("_routes/", _routes, name="_routes"),
+    path("product/<int:pk>/customize/", views.customize, name="customize"),
 ]

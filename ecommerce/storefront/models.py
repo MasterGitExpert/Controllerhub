@@ -94,6 +94,9 @@ class Product(models.Model):
     # Sale information for discounted items
     discount = models.BooleanField(default=False)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+    
+    colors = models.ManyToManyField('ProductColor', blank=True, related_name='products')
+    sizes = models.ManyToManyField('ProductSize', blank=True, related_name='products')
 
     def is_in_stock(self) -> bool:
         """ Returns True if the product is in stock. """
@@ -154,3 +157,14 @@ class OrderItem(models.Model):
     def __str__(self) -> str:
         return f"Order Item {self.order.order_id}: {self.product.name} x " \
             f"{self.quantity} = ${self.product.price * self.quantity}"
+
+
+class ProductColor(models.Model):
+    name = models.CharField(max_length=16)
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+class ProductSize(models.Model):
+    name = models.CharField(max_length=16)
+    def __str__(self) -> str:
+        return f"{self.name}"

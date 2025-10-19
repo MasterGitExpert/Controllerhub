@@ -191,3 +191,7 @@ def checkout(request):
 def checkoutsuccess(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     return render(request, "checkoutsuccess.html", {"order": order})
+
+def customize(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    return render(request, "customize.html", {"product": product})
