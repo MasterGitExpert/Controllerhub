@@ -7,6 +7,7 @@ from django.contrib.messages import get_messages
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from .models import Product, Customer, Order, OrderItem, ContactMessage
+from .models import Product, ProductCategory, ProductRange
 from .forms import ContactForm
 
 class StorefrontTests(TestCase):
@@ -563,3 +564,66 @@ class ContactFormFieldTestCase(TestCase):
             form.fields['message'].widget.attrs['class'],
             'form-textarea'
         )
+# customize
+# class CustomizeTest(TestCase):
+#     def setUp(self):
+#         cat_mice = ProductCategory.objects.create(name="Mice")
+#         range_home = ProductRange.objects.create(name="Homebrand")
+#         range_other = ProductRange.objects.create(name="Premium")
+
+#         # this has customize button
+#         self.mouse = Product.objects.create(
+#             name="Homebrand Mouse",
+#             price=50.0,
+#             sale_price=50.0,
+#             stock=10,
+#             category=cat_mice,
+#             range=range_home,
+#             display_item=True,
+#         )
+
+#         # this doesn't have 
+#         self.keyboard = Product.objects.create(
+#             name="Premium Keyboard",
+#             price=100.0,
+#             sale_price=100.0,
+#             stock=10,
+#             category=cat_mice,
+#             range=range_other,
+#             display_item=True,
+#         )
+
+#     # only mouse has customize button
+#     def test_only_mouse_has_customize_button(self):
+#         url = reverse("products")
+#         res = self.client.get(url)
+#         self.assertEqual(res.status_code, 200)
+
+#         self.assertContains(res, reverse("customize", args=[self.mouse.id]))
+
+#         self.assertNotContains(res, reverse("customize", args=[self.keyboard.id]))
+
+#     # page with color and size
+#     def test_customize_page_renders_correctly(self):
+#         url = reverse("customize", args=[self.mouse.id])
+#         res = self.client.get(url)
+#         self.assertEqual(res.status_code, 200)
+#         self.assertContains(res, 'name="color"')
+#         self.assertContains(res, 'name="size"')
+
+#     #check options
+#     def test_customize_dropdown_options(self):
+#         url = reverse("customize", args=[self.mouse.id])
+#         res = self.client.get(url)
+#         html = res.content.decode()
+#         # Color
+#         self.assertIn('<option value="default" selected>Default</option>', html)
+#         self.assertIn('<option value="pink">Pink</option>', html)
+#         self.assertIn('<option value="blue">Blue</option>', html)
+#         self.assertIn('<option value="black">Black</option>', html)
+#         self.assertIn('<option value="white">White</option>', html)
+
+#         # Size
+#         self.assertIn('<option value="default" selected>Default</option>', html)
+#         self.assertIn('<option value="small">Small</option>', html)
+#         self.assertIn('<option value="large">Large</option>', html)
