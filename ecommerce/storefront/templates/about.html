@@ -7,22 +7,132 @@
             <h1><i class="fas fa-info-circle"></i> About Wavelength</h1>
             <p>Discover the story behind premium gaming gear</p>
         </div>
-        <div style="width: 100%; display: flex; justify-content: center; padding: 20px;">
-            <div class="template-content" style="max-width: 800px;">
-                <section>
-                    <h2>Our Mission</h2>
-                    <p>We're passionate about creating the ultimate gaming experience through innovative technology and superior design.</p>
-                </section>
-                <br>
-                <br>
-                <section>
-                    <h2>Our Team</h2>
-                    <p>We are a small, dedicated team of gamers, designers, and engineers committed to delivering premium gaming gear and exceptional user experiences.</p>
-                </section>
-                <!-- <div class="coming-soon">
-                    <i class="fas fa-cog fa-spin"></i> Content Coming Soon
-                </div> -->
-            </div>
+        
+        <div class="about-container">
+            <!-- Mission Section -->
+            <section class="about-section mission-section">
+                <div class="section-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h2>Our Mission</h2>
+                <p>At Wavelength Gaming Gear, we're passionate about creating the ultimate gaming experience through innovative technology and superior design. We believe every gamer deserves equipment that enhances their performance and brings joy to their gaming sessions.</p>
+            </section>
+
+            <!-- Story Section -->
+            <section class="about-section story-section">
+                <div class="section-content">
+                    <div class="section-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h2>Our Story</h2>
+                    <p>Founded in 2025, Wavelength started with a simple idea: gaming gear should be both powerful and accessible. What began as a small operation has grown into a trusted brand for gamers worldwide. We've built our reputation on quality products, exceptional customer service, and a genuine love for gaming culture.</p>
+                </div>
+            </section>
+
+            <!-- Values Section -->
+            <section class="about-section values-section">
+                <div class="section-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h2>Our Values</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <i class="fas fa-trophy"></i>
+                        <h3>Quality First</h3>
+                        <p>Every product is tested and vetted to meet our high standards for performance and durability.</p>
+                    </div>
+                    <div class="value-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Gamer Community</h3>
+                        <p>We listen to our community and build products based on real feedback from real gamers.</p>
+                    </div>
+                    <div class="value-card">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Innovation</h3>
+                        <p>We constantly push boundaries to bring you the latest technology and cutting-edge designs.</p>
+                    </div>
+                    <div class="value-card">
+                        <i class="fas fa-handshake"></i>
+                        <h3>Customer Support</h3>
+                        <p>Your satisfaction is our priority. We're here to help every step of the way.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Team Section -->
+            <section class="about-section team-section">
+                <div class="section-icon">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+                <h2>Our Team</h2>
+                <p>We are a dedicated team of gamers, designers, and engineers committed to delivering premium gaming gear and exceptional user experiences. From competitive esports players to casual weekend gamers, our diverse team brings unique perspectives to every product we create.</p>
+                
+                <div class="team-stats">
+                    <div class="stat-item">
+                        <h3>5</h3>
+                        <p>Team Members</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>10+</h3>
+                        <p>Happy Customers</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>10+</h3>
+                        <p>Products</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>24/7</h3>
+                        <p>Support</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why Choose Us Section -->
+            <section class="about-section why-section">
+                <div class="section-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h2>Why Choose Wavelength?</h2>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h4>Premium Quality</h4>
+                            <p>All our products are carefully selected and tested for durability and performance</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h4>Competitive Pricing</h4>
+                            <p>We offer the best value without compromising on quality</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h4>Fast Shipping</h4>
+                            <p>Quick delivery to get your gear to you as fast as possible</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h4>30-Day Returns</h4>
+                            <p>Not satisfied? Return any product within 30 days for a full refund</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Call to Action -->
+            <section class="about-cta">
+                <h2>Ready to Level Up Your Gaming?</h2>
+                <p>Explore our collection of premium gaming gear and find your perfect setup</p>
+                <a href="{% url 'products' %}" class="cta-button">
+                    <i class="fas fa-gamepad"></i> Shop Products
+                </a>
+            </section>
         </div>
     </div>
 {% endblock %}

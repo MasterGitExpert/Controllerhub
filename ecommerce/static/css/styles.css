@@ -1872,3 +1872,223 @@ input.form-control:-webkit-autofill textarea.form-control:-webkit-autofill {
 .auth-page .navbar { 
     margin-bottom: 28px; 
 }
+
+
+/* About Page Styles */
+.about-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.about-section {
+    margin-bottom: 80px;
+    text-align: center;
+}
+
+.section-icon {
+    font-size: 4rem;
+    background: linear-gradient(45deg, #00d4ff, #ff0080);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.about-section h2 {
+    color: #00d4ff;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.about-section p {
+    color: #cccccc;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto 20px;
+}
+
+/* Mission Section */
+.mission-section {
+    background: rgba(0, 212, 255, 0.05);
+    padding: 60px 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+/* Story Section */
+.story-section {
+    background: rgba(255, 0, 128, 0.05);
+    padding: 60px 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 0, 128, 0.2);
+}
+
+/* Values Grid */
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.value-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 40px 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.value-card:hover {
+    transform: translateY(-10px);
+    border-color: #00d4ff;
+    box-shadow: 0 20px 40px rgba(0, 212, 255, 0.2);
+}
+
+.value-card i {
+    font-size: 3rem;
+    background: linear-gradient(45deg, #00d4ff, #ff0080);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.value-card h3 {
+    color: #00d4ff;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.value-card p {
+    color: #cccccc;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Team Stats */
+.team-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px 20px;
+    border-radius: 15px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    border-color: #00d4ff;
+    transform: scale(1.05);
+}
+
+.stat-item h3 {
+    font-size: 2.5rem;
+    background: linear-gradient(45deg, #00d4ff, #ff0080);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.stat-item p {
+    color: #cccccc;
+    font-size: 1rem;
+}
+
+/* Features List */
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-top: 40px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.feature-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    border-color: #00d4ff;
+    transform: translateX(10px);
+}
+
+.feature-item > i {
+    font-size: 2rem;
+    color: #00ff88;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+.feature-item h4 {
+    color: #00d4ff;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.feature-item p {
+    color: #cccccc;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Call to Action */
+.about-cta {
+    text-align: center;
+    padding: 60px 40px;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 128, 0.1));
+    border-radius: 20px;
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    margin-top: 60px;
+}
+
+.about-cta h2 {
+    color: #00d4ff;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.about-cta p {
+    color: #cccccc;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .about-section h2 {
+        font-size: 2rem;
+    }
+    
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .mission-section,
+    .story-section,
+    .about-cta {
+        padding: 40px 30px;
+    }
+}
