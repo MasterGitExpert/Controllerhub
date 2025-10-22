@@ -13,6 +13,24 @@ variables:
   webAppName: 'wavelengthcontrollerhub'
 
 steps:
+  - task: DownloadGitHubRelease@0
+    inputs:
+      connection: 'scaraliyose (1)'
+      userRepository: 'MasterGitExpert/Controllerhub'
+      defaultVersionType: 'latest'
+      downloadPath: '$(System.ArtifactsDirectory)'
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'appserviceconnection'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az webapp deploy \
+        --name $(webAppName) \
+        --resource-group Maingroup \
+        --src-path $(System.ArtifactsDirectory)
+      powerShellErrorActionPreference: 'silentlyContinue'
+    displayName: 'WebApp Details'
   - task: AzureCLI@2
     inputs:
       azureSubscription: 'appserviceconnection'
@@ -38,5 +56,14 @@ steps:
       scriptLocation: 'inlineScript'
       inlineScript: |
         az webapp log deployment list --name $(webAppName) --resource-group Maingroup
+      powerShellErrorActionPreference: 'silentlyContinue'
+    displayName: 'WepApp Log History'
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'appserviceconnection'
+      scriptType: 'pscore'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az webapp log tail --name $(webAppName) --resource-group Maingroup
       powerShellErrorActionPreference: 'silentlyContinue'
     displayName: 'WepApp Log History'
