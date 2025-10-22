@@ -38,6 +38,14 @@ DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", "20.211.64.15",
                  "wavelengthcontrollerhub.azurewebsites.net", os.environ.get('WEBSITE_HOSTNAME')]
 
+# Trusted origins for CSRF checks. Set via env var DJANGO_CSRF_TRUSTED_ORIGINS as
+# a comma-separated list in production, otherwise fall back to the known Azure host.
+_csrf_env = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS')
+if _csrf_env:
+    CSRF_TRUSTED_ORIGINS = [x.strip() for x in _csrf_env.split(',') if x.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = ['https://wavelengthcontrollerhub.azurewebsites.net']
+
 # Application definition
 
 INSTALLED_APPS = [
