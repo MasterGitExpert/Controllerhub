@@ -18,9 +18,21 @@ from django.contrib import admin
 from django.urls import path, include
 from . import settings
 from django.conf.urls.static import static
+import os
+import sys
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('storefront.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+# Serve media files during development. Django's `static()` helper only
+# returns patterns when DEBUG is True; allow an override using the
+# SERVE_MEDIA environment variable for local testing.
+if (
+    settings.DEBUG
+    or 'runserver' in sys.argv
+    or os.environ.get('SERVE_MEDIA', 'False').lower() in ('1', 'true', 'yes')
+):
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
