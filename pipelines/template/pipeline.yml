@@ -79,7 +79,7 @@ stages:
 #         timeoutInMinutes: 2
 - stage: "BuildStage"
   displayName: "Build Stage"
-  dependsOn: DeploymentApprovalStage
+  # dependsOn: DeploymentApprovalStage
   jobs:
   - job: BuildJob
     displayName: "Build Django Web Application"
