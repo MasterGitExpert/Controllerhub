@@ -147,8 +147,8 @@ stages:
           DJANGO_SETTINGS_MODULE=ecommerce.settings
           PYTHONPATH=./
           WEBSITE_RUN_FROM_PACKAGE=1
-          DJANGO_SERVE_MEDIA=1
-          DJANGO_MEDIA_ROOT=/home/site/wwwroot/media
+          # DJANGO_SERVE_MEDIA=1
+          # DJANGO_MEDIA_ROOT=/home/site/wwwroot/media
       displayName: 'Deploy Azure Web App'
   - job: ReviewJob
     displayName: "Review Deployment Logs"
