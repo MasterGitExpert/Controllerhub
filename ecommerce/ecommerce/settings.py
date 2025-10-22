@@ -128,20 +128,23 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
+
+MEDIA_URL = '/media/'
+
+
 STATICFILES_DIRS = [str(os.path.join(BASE_DIR, 'static/'))]
 
 # Where `collectstatic` will collect static files for production
 STATIC_ROOT = str(os.path.join(BASE_DIR, 'staticfiles'))
-
 # Use WhiteNoise storage for compressed files in production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 print(BASE_DIR)
 
-MEDIA_URL = '/media/'
 # Allow overriding MEDIA_ROOT (useful on Azure to point to persistent /home directory)
 MEDIA_ROOT = str(os.environ.get('DJANGO_MEDIA_ROOT',
-                 str(os.path.join(BASE_DIR, 'mediafiles'))))
+                 str(os.path.join(BASE_DIR, 'media'))))
 
 # In some hosting environments WEBSITE_HOSTNAME may not be set; guard against KeyError
 if 'WEBSITE_HOSTNAME' in os.environ and os.environ['WEBSITE_HOSTNAME'] not in ALLOWED_HOSTS:

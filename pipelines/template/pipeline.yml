@@ -146,9 +146,8 @@ stages:
         appSettings: |
           DJANGO_SETTINGS_MODULE=ecommerce.settings
           PYTHONPATH=./
-          # Enable Django to serve media files from the app filesystem (opt-in)
+          WEBSITE_RUN_FROM_PACKAGE=1
           DJANGO_SERVE_MEDIA=1
-          # Use a writable media root on Azure Linux App Service
           DJANGO_MEDIA_ROOT=/home/site/wwwroot/media
       displayName: 'Deploy Azure Web App'
   - job: ReviewJob

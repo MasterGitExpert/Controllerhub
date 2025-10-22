@@ -15,28 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import settings
 from django.conf.urls.static import static
 import os
 import sys
 
+from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('storefront.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-]
+    re_path(r'^media/(?P<path>.*)$', serve,
+            {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve,
+            {'document_root': settings.STATIC_ROOT}),
 
-# Only add media URL patterns when explicitly allowed. In production this is
-# normally handled by a storage service or web server but we support an
-# opt-in env var DJANGO_SERVE_MEDIA to enable serving media from the app's
-# filesystem (useful if you keep media in the deployed artifact or writable
-# app directory). We also allow serving when DEBUG is True or when running
-# the dev server.
-if (
-    settings.DEBUG
-    or 'runserver' in sys.argv
-    or os.environ.get('DJANGO_SERVE_MEDIA', 'False').lower() in ('1', 'true', 'yes')
-):
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
