@@ -36,7 +36,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = False
 
 ALLOWED_HOSTS = ["127.0.0.1", "20.211.64.15",
-                 "wavelengthcontrollerhub.azurewebsites.net", os.environ['WEBSITE_HOSTNAME']]
+                 "wavelengthcontrollerhub.azurewebsites.net", os.environ.get('WEBSITE_HOSTNAME')]
 
 # Application definition
 
