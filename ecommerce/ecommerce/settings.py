@@ -139,7 +139,9 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 print(BASE_DIR)
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = str(os.path.join(BASE_DIR, 'media'))
+# Allow overriding MEDIA_ROOT (useful on Azure to point to persistent /home directory)
+MEDIA_ROOT = str(os.environ.get('DJANGO_MEDIA_ROOT',
+                 str(os.path.join(BASE_DIR, 'mediafiles'))))
 
 # In some hosting environments WEBSITE_HOSTNAME may not be set; guard against KeyError
 if 'WEBSITE_HOSTNAME' in os.environ and os.environ['WEBSITE_HOSTNAME'] not in ALLOWED_HOSTS:

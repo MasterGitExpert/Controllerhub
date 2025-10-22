@@ -134,4 +134,24 @@ C:.
 - Review Management Feature @ayden8383
 - Admin Feature @MasterGitExpert
 
+## Serving uploaded media on Azure App Service (no external storage)
+
+By default, production deployments use external storage (recommended). If you prefer to serve media files from the App Service filesystem (not recommended for scale but fine for small projects), follow these steps:
+
+1. Ensure media files are present under `ecommerce/media/` in the repository before the pipeline runs, or are written to a persistent path at runtime.
+2. Configure the following Application Settings in Azure (Portal or CLI) for your Web App:
+
+   - `DJANGO_SERVE_MEDIA` = `1`
+   - `DJANGO_MEDIA_ROOT` = `/home/site/wwwroot/media`
+   - `DJANGO_SETTINGS_MODULE` = `ecommerce.settings`
+   - `DJANGO_SECRET_KEY` = (a secure value)
+   - `DJANGO_DEBUG` = `False`
+
+3. In the pipeline we set `DJANGO_MEDIA_ROOT=/home/site/wwwroot/media` so the deployed app will use Azure's writable path for media. When `DJANGO_SERVE_MEDIA` is enabled the app will add URL patterns to serve media.
+
+Caveats:
+
+- The built-in Django media serving is not optimized for high traffic. For a production-ready setup, consider using Azure Blob Storage or another dedicated object store.
+- Files under the app's package may be replaced on deployment. If you want uploads to persist across deployments, write them to `/home` (which is persisted across restarts) or an external storage service.
+
 
