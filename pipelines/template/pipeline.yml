@@ -17,69 +17,69 @@ variables:
   projectRoot: $(System.DefaultWorkingDirectory)
 
 stages:
-# - stage: "LinterStage"
-#   displayName: "Linter Stage"
-#   pool:
-#     vmImage: $(vmImageName)
-#   jobs:
-#   - job: RunLinters
-#     displayName: "Run Linter On Codebase"
-#     steps:
-#     - task: UsePythonVersion@0
-#       inputs:
-#         versionSpec: ${{ parameters.PythonVersion }}
-#       displayName: 'Use Python ${{ parameters.PythonVersion }}'
-#     - script: |
-#         python -m pip install flake8
-#       displayName: "Install flake8"
-#     - script: |
-#         python -m pip install mypy
-#       displayName: "Install mypy"
-#     - bash: |
-#         echo "Running mypy linter..."
-#         python -m mypy . ; true
-#       displayName: "Linter Run (mypy)"
-#     - bash: |
-#         echo "Running flake8 linter..."
-#         python -m flake8 . ; true
-#       displayName: "Linter Run (flake8)"
-# - stage: "UnitTestingStage"
-#   displayName: "Unit Testing Stage"
-#   dependsOn: LinterStage
-#   pool:
-#     vmImage: $(vmImageName)
-#   jobs:
-#   - job: RunUnitTests
-#     displayName: "Run Unit Tests"
-#     steps:
-#     - task: UsePythonVersion@0
-#       inputs:
-#         versionSpec: ${{ parameters.PythonVersion }}
-#       displayName: 'Use Python ${{ parameters.PythonVersion }}'
-#     - script: |
-#         python -m pip install -r requirements.txt
-#       workingDirectory: $(projectRoot)
-#       displayName: "Install Python Depenencies"
-#     - bash: |
-#         echo "Running tests..."
-#         python ecommerce/manage.py test storefront; true
-#       workingDirectory: $(projectRoot)
-#       displayName: "Run Unit Tests"
-# - stage: "DeploymentApprovalStage"
-#   displayName: "Deployment Approval Stage"
-#   dependsOn: UnitTestingStage
-#   pool: server
-#   jobs:
-#   - job: DeploymentApprovalJob
-#     displayName: "Manual Approval for Deployment"
-#     steps:
-#     - task: ManualValidation@1
-#       inputs:
-#         instructions: 'Please approve the deployment.'
-#         timeoutInMinutes: 2
+- stage: "LinterStage"
+  displayName: "Linter Stage"
+  pool:
+    vmImage: $(vmImageName)
+  jobs:
+  - job: RunLinters
+    displayName: "Run Linter On Codebase"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m pip install flake8
+      displayName: "Install flake8"
+    - script: |
+        python -m pip install mypy
+      displayName: "Install mypy"
+    - bash: |
+        echo "Running mypy linter..."
+        python -m mypy . ; true
+      displayName: "Linter Run (mypy)"
+    - bash: |
+        echo "Running flake8 linter..."
+        python -m flake8 . ; true
+      displayName: "Linter Run (flake8)"
+- stage: "UnitTestingStage"
+  displayName: "Unit Testing Stage"
+  dependsOn: LinterStage
+  pool:
+    vmImage: $(vmImageName)
+  jobs:
+  - job: RunUnitTests
+    displayName: "Run Unit Tests"
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: ${{ parameters.PythonVersion }}
+      displayName: 'Use Python ${{ parameters.PythonVersion }}'
+    - script: |
+        python -m pip install -r requirements.txt
+      workingDirectory: $(projectRoot)
+      displayName: "Install Python Depenencies"
+    - bash: |
+        echo "Running tests..."
+        python ecommerce/manage.py test storefront; true
+      workingDirectory: $(projectRoot)
+      displayName: "Run Unit Tests"
+- stage: "DeploymentApprovalStage"
+  displayName: "Deployment Approval Stage"
+  dependsOn: UnitTestingStage
+  pool: server
+  jobs:
+  - job: DeploymentApprovalJob
+    displayName: "Manual Approval for Deployment"
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        instructions: 'Please approve the deployment.'
+        timeoutInMinutes: 2
 - stage: "BuildStage"
   displayName: "Build Stage"
-  # dependsOn: DeploymentApprovalStage
+  dependsOn: DeploymentApprovalStage
   jobs:
   - job: BuildJob
     displayName: "Build Django Web Application"

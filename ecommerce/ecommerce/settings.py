@@ -33,9 +33,9 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "20.211.64.15", "169.254.130.2",
+ALLOWED_HOSTS = ["127.0.0.1", "20.211.64.15",
                  "wavelengthcontrollerhub.azurewebsites.net", os.environ.get('WEBSITE_HOSTNAME')]
 
 # Trusted origins for CSRF checks. Set via env var DJANGO_CSRF_TRUSTED_ORIGINS as
