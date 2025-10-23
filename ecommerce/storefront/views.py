@@ -332,6 +332,7 @@ def checkoutsuccess(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     return render(request, "checkoutsuccess.html", {"order": order})
 
+<<<<<<< HEAD
 
 def add_review(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
@@ -368,6 +369,8 @@ class SignUpView(FormView):
         return super().form_valid(form)
 
 
+=======
+>>>>>>> b153a995f503094a86ba0e62fab236c1a51741a9
 def customize(request, pk):
     product = get_object_or_404(Product, id=pk)
     return render(request, "customize.html", {"product": product})

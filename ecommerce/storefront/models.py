@@ -144,6 +144,7 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self) -> str:
+<<<<<<< HEAD
         return f"Order {self.order.pk} of {self.product.name}: {self.product.price} x {self.quantity} = ${self.product.price * self.quantity}"
 
 # --------------------
@@ -212,6 +213,11 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} — {self.provider} (****{self.last4})"
+=======
+        return f"Order Item {self.order.order_id}: {self.product.name} x " \
+            f"{self.quantity} = ${self.product.price * self.quantity}"
+
+>>>>>>> b153a995f503094a86ba0e62fab236c1a51741a9
 
 class ProductColor(models.Model):
     name = models.CharField(max_length=16)

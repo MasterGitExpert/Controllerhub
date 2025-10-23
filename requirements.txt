@@ -2,7 +2,10 @@ django
 pillow
 mypy
 flake8
+<<<<<<< HEAD
 gunicorn
 whitenoise
+=======
+>>>>>>> b153a995f503094a86ba0e62fab236c1a51741a9
 pytest
 pytest-django

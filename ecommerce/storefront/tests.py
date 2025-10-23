@@ -10,6 +10,8 @@ from .models import Product, Customer, Order, OrderItem, ContactMessage
 from .models import Product, ProductCategory, ProductRange
 from .forms import ContactForm
 
+from storefront.models import Product, ProductCategory, ProductRange
+
 class StorefrontTests(TestCase):
     def setUp(self):
         # Two products: one regular, one on discount with limited stock
@@ -395,6 +397,7 @@ class U102LoginTests(TestCase):
         self.assertContains(r, "try again", status_code=200)
 
     # U102-TC5: password reset page renders (R2 readiness)
+<<<<<<< HEAD
     # def test_password_reset_page_renders(self):
     #     r = self.client.get(reverse("password_reset"))
     #     self.assertEqual(r.status_code, 200)
@@ -627,3 +630,73 @@ class ContactFormFieldTestCase(TestCase):
 #         self.assertIn('<option value="default" selected>Default</option>', html)
 #         self.assertIn('<option value="small">Small</option>', html)
 #         self.assertIn('<option value="large">Large</option>', html)
+=======
+    def test_password_reset_page_renders(self):
+        r = self.client.get(reverse("password_reset"))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Reset password")
+
+# customize
+class CustomizeTest(TestCase):
+    def setUp(self):
+        cat_mice = ProductCategory.objects.create(name="Mice")
+        range_home = ProductRange.objects.create(name="Homebrand")
+        range_other = ProductRange.objects.create(name="Premium")
+
+        # this has customize button
+        self.mouse = Product.objects.create(
+            name="Homebrand Mouse",
+            price=50.0,
+            sale_price=50.0,
+            stock=10,
+            category=cat_mice,
+            range=range_home,
+            display_item=True,
+        )
+
+        # this doesn't have 
+        self.keyboard = Product.objects.create(
+            name="Premium Keyboard",
+            price=100.0,
+            sale_price=100.0,
+            stock=10,
+            category=cat_mice,
+            range=range_other,
+            display_item=True,
+        )
+
+    # only mouse has customize button
+    def test_only_mouse_has_customize_button(self):
+        url = reverse("products")
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+
+        self.assertContains(res, reverse("customize", args=[self.mouse.id]))
+
+        self.assertNotContains(res, reverse("customize", args=[self.keyboard.id]))
+
+    # page with color and size
+    def test_customize_page_renders_correctly(self):
+        url = reverse("customize", args=[self.mouse.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
+        self.assertContains(res, 'name="color"')
+        self.assertContains(res, 'name="size"')
+
+    #check options
+    def test_customize_dropdown_options(self):
+        url = reverse("customize", args=[self.mouse.id])
+        res = self.client.get(url)
+        html = res.content.decode()
+        # Color
+        self.assertIn('<option value="default" selected>Default</option>', html)
+        self.assertIn('<option value="pink">Pink</option>', html)
+        self.assertIn('<option value="blue">Blue</option>', html)
+        self.assertIn('<option value="black">Black</option>', html)
+        self.assertIn('<option value="white">White</option>', html)
+
+        # Size
+        self.assertIn('<option value="default" selected>Default</option>', html)
+        self.assertIn('<option value="small">Small</option>', html)
+        self.assertIn('<option value="large">Large</option>', html)
+>>>>>>> b153a995f503094a86ba0e62fab236c1a51741a9
