@@ -98,9 +98,11 @@ stages:
         pip install -r requirements.txt
       displayName: "Install requirements"
     - script: |
+        # Run migrations (use sqlite here as configured) and collect static files
         source antenv/bin/activate
         python ecommerce/manage.py makemigrations
-        python ecommerce/manage.py migrate
+        python ecommerce/manage.py migrate --noinput
+        python ecommerce/manage.py collectstatic --noinput
       displayName: "Run Database Migrations"
     - task: ArchiveFiles@2
       inputs:
@@ -140,7 +142,13 @@ stages:
         slotName: 'production'
         package: '$(Pipeline.Workspace)/drop/$(Build.BuildId).zip'
         runtimeStack: 'PYTHON|3.13'
-        startUpCommand: 'python ecommerce/manage.py runserver'
+        startupCommand: "gunicorn --chdir ecommerce ecommerce.wsgi:application --bind=0.0.0.0 --timeout 600  --access-logfile '-' --error-logfile '-'"
+        # appSettings: |
+        #   -DJANGO_SETTINGS_MODULE=ecommerce.settings
+        #   -PYTHONPATH=./
+        #   -WEBSITE_RUN_FROM_PACKAGE=1
+        #   # DJANGO_SERVE_MEDIA=1
+        #   # DJANGO_MEDIA_ROOT=/home/site/wwwroot/media
       displayName: 'Deploy Azure Web App'
   - job: ReviewJob
     displayName: "Review Deployment Logs"

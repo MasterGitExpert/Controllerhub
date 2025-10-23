@@ -25,13 +25,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6&m2z2^)=@vuo_sp$t$h_m&x#@e+4)8uny6+xn2cc^9t@c$(da'
+# Read SECRET_KEY from environment in production; fall back to the existing value for local/dev.
+# SECRET_KEY = 'django-insecure-6&m2z2^)=@vuo_sp$t$h_m&x#@e+4)8uny6+xn2cc^9t@c$(da'
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-6&m2z2^)=@vuo_sp$t$h_m&x#@e+4)8uny6+xn2cc^9t@c$(da'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "20.211.64.15",
+                 "wavelengthcontrollerhub.azurewebsites.net", os.environ.get('WEBSITE_HOSTNAME')]
 
+# Trusted origins for CSRF checks. Set via env var DJANGO_CSRF_TRUSTED_ORIGINS as
+# a comma-separated list in production, otherwise fall back to the known Azure host.
+_csrf_env = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS')
+if _csrf_env:
+    CSRF_TRUSTED_ORIGINS = [x.strip()
+                            for x in _csrf_env.split(',') if x.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        'http://wavelengthcontrollerhub.azurewebsites.net',
+        'https://wavelengthcontrollerhub.azurewebsites.net']
 
 # Application definition
 
@@ -43,10 +59,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'storefront',
+    "whitenoise.runserver_nostatic",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -120,13 +138,28 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/')]
+STATIC_URL = "/static/"
+
+MEDIA_URL = '/media/'
+
+
+STATICFILES_DIRS = [str(os.path.join(BASE_DIR, 'static/'))]
+
+# Where `collectstatic` will collect static files for production
+STATIC_ROOT = str(os.path.join(BASE_DIR, 'staticfiles'))
+# Use WhiteNoise storage for compressed files in production
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 print(BASE_DIR)
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Allow overriding MEDIA_ROOT (useful on Azure to point to persistent /home directory)
+MEDIA_ROOT = str(os.environ.get('DJANGO_MEDIA_ROOT',
+                 str(os.path.join(BASE_DIR, 'media'))))
+
+# In some hosting environments WEBSITE_HOSTNAME may not be set; guard against KeyError
+if 'WEBSITE_HOSTNAME' in os.environ and os.environ['WEBSITE_HOSTNAME'] not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(os.environ['WEBSITE_HOSTNAME'])
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
