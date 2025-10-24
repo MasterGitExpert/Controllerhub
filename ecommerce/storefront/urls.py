@@ -28,7 +28,8 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
 
     path("_routes/", _routes, name="_routes"),
-
+    
+    path("product/<int:pk>/customize/", views.customize, name="customize"),
     # Contact message management URLs
     # path('message/<int:message_id>/read/', views.mark_message_read, name='mark_message_read'),
     # path('message/<int:message_id>/unread/', views.mark_message_unread, name='mark_message_unread'),

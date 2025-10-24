@@ -85,6 +85,8 @@ class Product(models.Model):
     range = models.ForeignKey(ProductRange, on_delete=models.CASCADE, null=True)
     discount = models.BooleanField(default=False)
     sale_price = models.DecimalField(max_digits=8, decimal_places=2)
+    colors = models.ManyToManyField('ProductColor', blank=True, related_name='products')
+    sizes = models.ManyToManyField('ProductSize', blank=True, related_name='products')
 
     def is_in_stock(self) -> bool:
 
@@ -209,3 +211,14 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} — {self.provider} (****{self.last4})"
+
+
+class ProductColor(models.Model):
+    name = models.CharField(max_length=16)
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+class ProductSize(models.Model):
+    name = models.CharField(max_length=16)
+    def __str__(self) -> str:
+        return f"{self.name}"

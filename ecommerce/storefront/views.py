@@ -366,3 +366,8 @@ class SignUpView(FormView):
         if user is not None:
             login(self.request, user)
         return super().form_valid(form)
+
+
+def customize(request, pk):
+    product = get_object_or_404(Product, id=pk)
+    return render(request, "customize.html", {"product": product})
